@@ -1,0 +1,8 @@
+{
+  "name": "wpfactory/wpfactory-cross-selling",
+  "autoload": {
+    "classmap": [
+      "src/php/"
+    ]
+  }
+}

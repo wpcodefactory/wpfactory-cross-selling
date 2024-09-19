@@ -1,0 +1,48 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "533aac168a42646a7744dff6e5df5fe5",
+    "packages": [
+        {
+            "name": "wpfactory/wpfactory-admin-menu",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:wpcodefactory/wpfactory-admin-menu.git",
+                "reference": "fc8c490dc28b7a211df26fe9b344253fa15f30cc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wpcodefactory/wpfactory-admin-menu/zipball/fc8c490dc28b7a211df26fe9b344253fa15f30cc",
+                "reference": "fc8c490dc28b7a211df26fe9b344253fa15f30cc",
+                "shasum": ""
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "src/php/"
+                ]
+            },
+            "support": {
+                "source": "https://github.com/wpcodefactory/wpfactory-admin-menu/tree/master",
+                "issues": "https://github.com/wpcodefactory/wpfactory-admin-menu/issues"
+            },
+            "time": "2024-09-19T18:52:04+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "wpfactory/wpfactory-admin-menu": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
+}

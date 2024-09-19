@@ -7,13 +7,13 @@
  * @author  WPFactory
  */
 
-namespace WPFactory\WPF_Cross_Selling;
+namespace WPFactory\WPFactory_Cross_Selling;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
-if ( ! trait_exists( 'WPFactory\WPF_Cross_Selling\Singleton' ) ) {
+if ( ! trait_exists( 'WPFactory\WPFactory_Cross_Selling\Singleton' ) ) {
 
 	trait Singleton {
 

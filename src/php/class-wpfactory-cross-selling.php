@@ -7,13 +7,13 @@
  * @author  WPFactory
  */
 
-namespace WPFactory\WPF_Cross_Selling;
+namespace WPFactory\WPFactory_Cross_Selling;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
-if ( ! class_exists( 'WPFactory\WPF_Cross_Selling\WPF_Cross_Selling' ) ) {
+if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling' ) ) {
 
 	/**
 	 * WPF_Cross_Selling.
@@ -21,7 +21,7 @@ if ( ! class_exists( 'WPFactory\WPF_Cross_Selling\WPF_Cross_Selling' ) ) {
 	 * @version 1.0.0
 	 * @since   1.0.0
 	 */
-	class WPF_Cross_Selling {
+	class WPFactory_Cross_Selling {
 
 		/**
 		 * Setup args.

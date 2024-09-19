@@ -487,7 +487,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 			$link           = admin_url( 'admin.php?page=' . $this->submenu_page_slug );
 			$target         = '_self';
 			$custom_links[] = sprintf( '<a href="%s" target="%s">%s</a>', esc_url( $link ), sanitize_text_field( $target ), sanitize_text_field( $label ) );
-			$links          = array_merge( $custom_links, $links );
+			$links          = array_merge( $links, $custom_links );
 
 			return $links;
 		}

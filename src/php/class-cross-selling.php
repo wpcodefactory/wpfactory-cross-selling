@@ -186,8 +186,7 @@ if ( ! class_exists( 'WPFactory\WPF_Cross_Selling\WPF_Cross_Selling' ) ) {
 		 * @return string
 		 */
 		function generate_free_plugin_install_url( $plugin_slug ) {
-			//$nonce       = wp_create_nonce( 'install-plugin' );
-			$nonce = wp_create_nonce('install-plugin_' . $plugin_slug);
+			$nonce = wp_create_nonce( 'install-plugin_' . $plugin_slug );
 			$install_url = add_query_arg(
 				array(
 					'action'   => 'install-plugin',

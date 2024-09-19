@@ -39,7 +39,7 @@ if ( ! class_exists( 'WPFactory\WPF_Cross_Selling\WPF_Cross_Selling' ) ) {
 		 *
 		 * @var string
 		 */
-		protected $admin_page_slug = 'wpcodefactory';
+		protected $admin_page_slug = 'wpfactory';
 
 		/**
 		 * Admin page slug.
@@ -48,7 +48,7 @@ if ( ! class_exists( 'WPFactory\WPF_Cross_Selling\WPF_Cross_Selling' ) ) {
 		 *
 		 * @var string
 		 */
-		protected $submenu_page_slug = 'wpcodefactory-cross-selling';
+		protected $submenu_page_slug = 'wpfactory-cross-selling';
 
 		/**
 		 * Products.
@@ -139,7 +139,7 @@ if ( ! class_exists( 'WPFactory\WPF_Cross_Selling\WPF_Cross_Selling' ) ) {
 				$this->admin_page_slug,
 				array( $this, 'render_cross_selling_page' ),
 				$icon,
-				20
+				64
 			);
 
 			// Removes submenu page.

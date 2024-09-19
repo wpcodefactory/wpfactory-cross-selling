@@ -137,6 +137,9 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 
 			// Cross-selling admin page.
 			add_action( 'admin_menu', array( $this, 'create_cross_selling_submenu' ) );
+
+			//$test = plugin_dir_url( $this->get_library_file_path() );
+			//error_log($test);
 		}
 
 		/**

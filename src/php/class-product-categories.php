@@ -54,10 +54,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Product_Categories' ) ) 
 					'name' => 'Orders Restrictions',
 					'slug' => 'orders-restrictions',
 				),
-				/*array(
-					'name' => 'Store Customization',
-					'slug' => 'store-customization',
-				),*/
 				array(
 					'name' => 'WordPress Utilities',
 					'slug' => 'wordpress-utilities',

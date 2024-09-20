@@ -5,3 +5,6 @@ changelog.md export-ignore
 changelog.txt export-ignore
 .gitattributes export-ignore
 composer.json export-ignore
+package.json export-ignore
+package-lock.json export-ignore
+webpack.config.js export-ignore

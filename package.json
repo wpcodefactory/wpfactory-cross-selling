@@ -14,7 +14,6 @@
     "@babel/cli": "latest",
     "@babel/core": "latest",
     "@babel/preset-env": "latest",
-    "babel-core": "^4.7.16",
     "babel-loader": "latest",
     "babel-plugin-dynamic-import-webpack": "latest",
     "css-loader": "latest",

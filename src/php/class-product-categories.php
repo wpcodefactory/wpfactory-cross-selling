@@ -43,12 +43,24 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Product_Categories' ) ) 
 		function get_product_categories() {
 			$this->product_categories = array(
 				array(
-					'name' => 'Email & Marketing',
-					'slug' => 'email-&-marketing',
+					'name' => 'Admin & Reporting',
+					'slug' => 'admin-&-reporting',
 				),
 				array(
-					'name' => 'Order & Quantity Management',
-					'slug' => 'order-&-quantity-management',
+					'name' => 'Marketing & Promotion',
+					'slug' => 'marketing-&-promotion',
+				),
+				array(
+					'name' => 'Orders Restrictions',
+					'slug' => 'orders-restrictions',
+				),
+				/*array(
+					'name' => 'Store Customization',
+					'slug' => 'store-customization',
+				),*/
+				array(
+					'name' => 'WordPress Utilities',
+					'slug' => 'wordpress-utilities',
 				),
 			);
 

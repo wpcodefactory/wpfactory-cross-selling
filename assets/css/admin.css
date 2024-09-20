@@ -10,7 +10,8 @@
  */
 .wpfcs-product.disabled, .wpfcs-button.disabled {
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.5; /* Safari 6.0 - 9.0 */
+  filter: grayscale(100%);
 }
 
 .wpfcs-button {
@@ -61,11 +62,10 @@
   align-items: center; /* Centers items vertically */
   gap: 18px;
   flex-wrap: wrap;
-  background-image: url(..//img/wpfactory.png);
 }
 @media (max-width: 800px) {
   .wpfcs-product {
-    justify-content: center; /* Distribute items evenly on mobile */
+    justify-content: center;
   }
 }
 

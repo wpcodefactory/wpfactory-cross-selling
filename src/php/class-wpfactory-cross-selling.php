@@ -141,40 +141,30 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 				add_filter( 'plugin_action_links_' . $this->get_plugin_basename(), array( $this, 'add_action_links' ) );
 			}
 
-			// Cross-selling admin page.
+			// Cross-selling submenu.
 			add_action( 'admin_menu', array( $this, 'create_cross_selling_submenu' ) );
 
-			// Hook into admin_enqueue_scripts
+			// Enqueues admin syles.
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
-			//$test = plugin_dir_url( $this->get_library_file_path() );
-			//error_log($test);
-
-			/*add_action('admin_head', function(){
-				*/?><!--
-					<script type="text/javascript">
-						__webpack_public_path__ = <?php /*echo untrailingslashit( plugin_dir_url( $this->get_library_file_path() ) )*/?>
-					</script>
-				--><?php
-/*			},1);*/
 		}
 
+		/**
+		 * Enqueues admin syles.
+		 *
+		 * @version 1.0.0
+		 * @since   1.0.0
+		 *
+		 * @return void
+		 */
 		function enqueue_admin_styles() {
 			if ( ! isset( $_GET['page'] ) || $_GET['page'] !== $this->submenu_page_slug ) {
 				return;
 			}
-
-			wp_enqueue_style( 'wpfactory-cross-selling', plugin_dir_url( $this->get_library_file_path() ) . 'assets/css/admin.css', array(), '1.0.0' );
-
-			wp_enqueue_script(
-				'wpfactory-cross-selling',
-				plugin_dir_url( $this->get_library_file_path() ) . 'assets/js/admin.js',
-				array(), // No dependencies
-				'1.0.0',
-				true // Load in the footer
-			);
-			wp_localize_script('wpfactory-cross-selling', 'myPluginUrl', plugin_dir_url( $this->get_library_file_path() ));
-
-
+			$suffix        = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+			$css_file_path = untrailingslashit( plugin_dir_path( $this->get_library_file_path() ) ) . '/assets/css/admin' . $suffix . '.css';
+			$css_file_url  = untrailingslashit( plugin_dir_url( $this->get_library_file_path() ) ) . '/assets/css/admin' . $suffix . '.css';
+			$version       = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? current_time( 'timestamp' ) : filemtime( $css_file_path );
+			wp_enqueue_style( 'wpfactory-cross-selling', $css_file_url, array(), $version );
 		}
 
 		/**
@@ -242,7 +232,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 				<?php endforeach; ?>
 			</div>
 			<?php
-			//$this->get_cross_selligs_page_style();
 		}
 
 		/**

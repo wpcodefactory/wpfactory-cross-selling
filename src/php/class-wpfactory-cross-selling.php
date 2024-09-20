@@ -48,18 +48,18 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 		 *
 		 * @since   1.0.0
 		 *
-		 * @var array
+		 * @var Products
 		 */
-		protected $products = array();
+		protected $products;
 
 		/**
 		 * Product categories.
 		 *
 		 * @since   1.0.0
 		 *
-		 * @var array
+		 * @var Product_Categories
 		 */
-		protected $product_categories = array();
+		protected $product_categories;
 
 		/**
 		 * Initialized.
@@ -127,6 +127,12 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 			}
 			$this->initialized = true;
 
+			// Products.
+			$this->products = new Products();
+
+			// Product Categories.
+			$this->product_categories = new Product_Categories();
+
 			// WPFactory admin menu.
 			WPFactory_Admin_Menu::get_instance();
 
@@ -138,8 +144,37 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 			// Cross-selling admin page.
 			add_action( 'admin_menu', array( $this, 'create_cross_selling_submenu' ) );
 
+			// Hook into admin_enqueue_scripts
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
 			//$test = plugin_dir_url( $this->get_library_file_path() );
 			//error_log($test);
+
+			/*add_action('admin_head', function(){
+				*/?><!--
+					<script type="text/javascript">
+						__webpack_public_path__ = <?php /*echo untrailingslashit( plugin_dir_url( $this->get_library_file_path() ) )*/?>
+					</script>
+				--><?php
+/*			},1);*/
+		}
+
+		function enqueue_admin_styles() {
+			if ( ! isset( $_GET['page'] ) || $_GET['page'] !== $this->submenu_page_slug ) {
+				return;
+			}
+
+			wp_enqueue_style( 'wpfactory-cross-selling', plugin_dir_url( $this->get_library_file_path() ) . 'assets/css/admin.css', array(), '1.0.0' );
+
+			wp_enqueue_script(
+				'wpfactory-cross-selling',
+				plugin_dir_url( $this->get_library_file_path() ) . 'assets/js/admin.js',
+				array(), // No dependencies
+				'1.0.0',
+				true // Load in the footer
+			);
+			wp_localize_script('wpfactory-cross-selling', 'myPluginUrl', plugin_dir_url( $this->get_library_file_path() ));
+
+
 		}
 
 		/**
@@ -188,8 +223,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 			$setup_args = $this->get_setup_args();
 			$admin_page = $setup_args['admin_page'] ?? '';
 			$page_title = $admin_page['page_title'] ?? '';
-			$categories = $this->get_product_categories();
-			$products   = $this->get_products();
+			$categories = $this->product_categories->get_product_categories();
+			$products   = $this->products->get_products();
 			?>
 			<div class="wrap wpfcs">
 				<h1><?php echo esc_html( $page_title ); ?></h1>
@@ -207,7 +242,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 				<?php endforeach; ?>
 			</div>
 			<?php
-			$this->get_cross_selligs_page_style();
+			//$this->get_cross_selligs_page_style();
 		}
 
 		/**
@@ -232,136 +267,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 			);
 
 			return $install_url;
-		}
-
-		/**
-		 * get_cross_selligs_page_style.
-		 *
-		 * @version 1.0.0
-		 * @since   1.0.0
-		 *
-		 * @return void
-		 */
-		function get_cross_selligs_page_style() {
-			?>
-			<style>
-				.wpfcs-product {
-					background: #FFFFFF;
-					padding: 18px 24px;
-					border: 1px solid #F2F2F2;
-					display: flex;
-					justify-content: flex-start; /* Aligns items horizontally (in a row) */
-					align-items: center; /* Centers items vertically */
-					gap: 18px;
-					flex-wrap: wrap;
-				}
-
-				@media (max-width: 800px) {
-					.wpfcs-product {
-						justify-content: center; /* Distribute items evenly on mobile */
-					}
-				}
-
-				.wpfcs-product-title {
-					margin: 0 0 7px;
-				}
-
-				.wpfcs-product-desc {
-					margin: 0;
-					color: #878787;
-				}
-
-				.wpfcs-product-actions {
-					margin-left: auto;
-					border-left: 1px solid #F2F2F2;
-					padding: 10px 0 10px 24px;
-					display: flex;
-					justify-content: flex-start; /* Aligns items horizontally (in a row) */
-					align-items: center;
-					gap: 10px;
-				}
-
-				@media (max-width: 800px) {
-					.wpfcs-product-actions {
-						margin-left: unset;
-						padding-left: 0;
-						border-left: none;
-					}
-				}
-
-				.wpfcs-category {
-					margin: 33px 0 17px 0;
-					font-size: 18px;
-					font-weight: 700;
-				}
-
-				.wpfcs-product-img-wrapper {
-					width: 60px;
-					height: 60px;
-					background: rgb(255, 255, 255);
-					background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(190, 233, 252, 1) 100%);
-					display: flex;
-					justify-content: center;
-					align-items: center;
-				}
-
-				.wpfcs-product-img-wrapper img {
-					max-width: 100%;
-					max-height: 100%;
-					height: auto;
-					width: auto;
-				}
-
-				.wpfcs-button {
-					border-radius: 100px;
-					font-size: 14px;
-					padding: 7px 18px;
-					cursor: pointer;
-					text-decoration: none;
-					display: flex;
-					align-items: center; /* Centers items vertically */
-					justify-content: center;
-					font-weight: 700;
-				}
-
-				.wpfcs-button.disabled, .wpfcs-product.disabled {
-					pointer-events: none; /* Disables any mouse events (clicks, hovers, etc.) */
-					opacity: 0.5;
-				}
-
-				.wpfcs-button-2 {
-					color: #14243B;
-					border: 1px solid #DCDCDE;
-				}
-
-				.wpfcs-button-2:hover {
-					background: #f5f5f5;
-					color: #14243B;
-				}
-
-				.wpfcs-button-2 i {
-					color: #1A2DC9;
-				}
-
-				.wpfcs-button-1 {
-					color: #fff;
-					background: #14243B;
-				}
-
-				.wpfcs-button-1:hover {
-					background: #204677;
-					color: #fff;
-				}
-
-				.wpfcs-button-1 i {
-					color: #02AAF2;
-				}
-
-				.wpfcs-button i {
-					margin: 0 8px 0 -3px;
-				}
-			</style>
-			<?php
 		}
 
 		/**
@@ -407,73 +312,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 			return isset( $all_plugins[ $plugin_slug ] );
 		}
 
-		/**
-		 * get_products.
-		 *
-		 * @version 1.0.0
-		 * @since   1.0.0
-		 *
-		 * @return array[]
-		 */
-		function get_products() {
-			$this->products = array(
-				array(
-					'name'             => 'Wishlist for WooCommerce',
-					'desc'             => 'description for wish list',
-					'category_slug'    => 'email-&-marketing',
-					'icon_url'         => 'https://ps.w.org/wish-list-for-woocommerce/assets/icon.svg?rev=3078494',
-					'free_plugin_path' => 'wish-list-for-woocommerce/wish-list-for-woocommerce.php',
-					'free_plugin_slug' => 'wish-list-for-woocommerce',
-					'pro_plugin_path'  => 'wish-list-for-woocommerce-pro/wish-list-for-woocommerce-pro.php',
-					'pro_plugin_url'   => 'http://uol.com.br',
-				),
-				array(
-					'name'             => 'Additional Custom Email for WooCommerce',
-					'desc'             => 'description for additional custom email for woocommerce',
-					'category_slug'    => 'email-&-marketing',
-					'icon_url'         => 'https://ps.w.org/custom-emails-for-woocommerce/assets/icon.svg?rev=2970983',
-					'free_plugin_path' => 'a/a.php',
-					'free_plugin_slug' => 'custom-emails-for-woocommerce',
-					'pro_plugin_path'  => 'a-pro/a-pro.php',
-					'pro_plugin_url'   => 'http://g1.com.br'
-				),
-				array(
-					'name'             => 'Payment Gateways by Shipping for WooCommerce',
-					'desc'             => 'description for Payment Gateways by Shipping for WooCommerce',
-					'category_slug'    => 'order-&-quantity-management',
-					'icon_url'         => 'https://ps.w.org/payment-gateways-per-product-categories-for-woocommerce/assets/icon.svg',
-					'free_plugin_path' => 'payment-gateways-per-product-categories-for-woocommerce/payment-gateways-per-product-for-woocommerce.php',
-					'free_plugin_slug' => 'payment-gateways-per-product-categories-for-woocommerce',
-					'pro_plugin_path'  => 'a-pro/a-pro.php',
-					'pro_plugin_url'   => 'https://wpfactory.com/item/payment-gateways-per-product-for-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
-				)
-			);
-
-			return $this->products;
-		}
-
-		/**
-		 * get_product_categories.
-		 *
-		 * @version 1.0.0
-		 * @since   1.0.0
-		 *
-		 * @return array|array[]
-		 */
-		function get_product_categories() {
-			$this->product_categories = array(
-				array(
-					'name' => 'Email & Marketing',
-					'slug' => 'email-&-marketing',
-				),
-				array(
-					'name' => 'Order & Quantity Management',
-					'slug' => 'order-&-quantity-management',
-				),
-			);
-
-			return $this->product_categories;
-		}
 
 		/**
 		 * Adds action links.

@@ -24,6 +24,7 @@
     "sass-loader": "latest",
     "url-loader": "latest",
     "webpack": "latest",
-    "webpack-cli": "latest"
+    "webpack-cli": "latest",
+    "webpack-remove-empty-scripts": "latest"
   }
 }

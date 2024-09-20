@@ -1,5 +1,6 @@
 var path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const RemoveEmptyScriptsPlugin = require('webpack-remove-empty-scripts');
 
 // Change these variables to fit your project.
 const outputPath = './assets';
@@ -62,8 +63,10 @@ const devConfig = {
 		path: path.resolve(__dirname, outputPath),
 		filename: 'js/[name].js',
 		chunkFilename: 'js/modules/dev/[name].js',
+
 	},
 	plugins: [
+		new RemoveEmptyScriptsPlugin(),
 		new MiniCssExtractPlugin({
 			filename: 'css/[name].css',
 		}),
@@ -84,6 +87,7 @@ const prodConfig = {
 		chunkFilename: 'js/modules/[name].js',
 	},
 	plugins: [
+		new RemoveEmptyScriptsPlugin(),
 		new MiniCssExtractPlugin({
 			filename: 'css/[name].min.css',
 		}),

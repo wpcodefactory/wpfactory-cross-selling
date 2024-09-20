@@ -1,7 +1,6 @@
 {
-  "name": "guest-order-tracking-for-woocommerce-pro",
+  "name": "wpfactory-cross-selling",
   "version": "1.0.0",
-  "description": "=== Guest Order Tracking for WooCommerce ===\r Contributors: wpcodefactory, omardabbas, karzin, anbinder, algoritmika, kousikmukherjeeli\r Tags: woocommerce, order, tracking, unlogged, guest\r Requires at least: 4.4\r Tested up to: 6.6\r Stable tag: 2.1.6\r License: GNU General Public License v3.0\r License URI: http://www.gnu.org/licenses/gpl-3.0.html",
   "main": "index.js",
   "scripts": {
     "prod": "webpack --mode production",

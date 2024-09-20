@@ -1,7 +1,7 @@
 var path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-// change these variables to fit your project
+// Change these variables to fit your project.
 const outputPath = './assets';
 const entryPoints = {
 	admin: ['./src/scss/admin.scss'],
@@ -10,7 +10,7 @@ const entryPoints = {
 	//frontend: ['./src/js/frontend.js']
 };
 
-// Rules
+// Rules.
 const rules = [
 	{
 		test: /\.scss$/i,
@@ -54,7 +54,7 @@ const rules = [
 	}
 ];
 
-// Development
+// Development.
 const devConfig = {
 	entry: entryPoints,
 	output: {
@@ -71,11 +71,10 @@ const devConfig = {
 	module: {
 		rules: rules
 	},
-	devtool: 'source-map',
-
+	devtool: 'eval-source-map',
 };
 
-// Production
+// Production.
 const prodConfig = {
 	entry: entryPoints,
 	output: {
@@ -98,7 +97,7 @@ const prodConfig = {
 
 };
 
-// Exports
+// Exports.
 module.exports = (env, argv) => {
 	switch (argv.mode) {
 		case 'production':

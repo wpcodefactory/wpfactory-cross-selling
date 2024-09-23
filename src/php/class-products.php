@@ -43,8 +43,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 		function get_products() {
 			$this->products = array(
 				array(
-					'name'             => 'Wishlist for WooCommerce',
-					'desc'             => 'Encourage More Purchases by Offering Easy Multi-Wishlist Creation and Sharing Features.',
+					'name'             => __('Wishlist for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('Encourage More Purchases by Offering Easy Multi-Wishlist Creation and Sharing Features.','wpfactory-cross-selling'),
 					'category_slug'    => 'marketing-&-promotion',
 					'icon_url'         => 'https://ps.w.org/wish-list-for-woocommerce/assets/icon.svg?rev=3078494',
 					'free_plugin_path' => 'wish-list-for-woocommerce/wish-list-for-woocommerce.php',
@@ -53,8 +53,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/wish-list-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory',
 				),
 				array(
-					'name'             => 'Min Max Default Quantity for WooCommerce',
-					'desc'             => 'Control Product Quantities and make shopping perfectly tailored to your store\'s needs.',
+					'name'             => __('Min Max Default Quantity for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('Control Product Quantities and make shopping perfectly tailored to your store\'s needs.','wpfactory-cross-selling'),
 					'category_slug'    => 'orders-restrictions',
 					'icon_url'         => 'https://ps.w.org/product-quantity-for-woocommerce/assets/icon.svg?rev=2970983',
 					'free_plugin_path' => 'product-quantity-for-woocommerce/product-quantity-for-woocommerce.php',
@@ -63,8 +63,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/product-quantity-for-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Cost of Goods Sold (COGS): Cost & Profit Calculator for WooCommerce',
-					'desc'             => 'Understand your profits by accurately tracking costs. Make smarter decisions for your business and maximize your store\'s profitability with ease.',
+					'name'             => __('Cost of Goods Sold (COGS): Cost & Profit Calculator for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('Understand your profits by accurately tracking costs. Make smarter decisions for your business and maximize your store\'s profitability with ease.','wpfactory-cross-selling'),
 					'category_slug'    => 'admin-&-reporting',
 					'icon_url'         => 'https://ps.w.org/cost-of-goods-for-woocommerce/assets/icon.svg',
 					'free_plugin_path' => 'cost-of-goods-for-woocommerce/cost-of-goods-for-woocommerce.php',
@@ -73,8 +73,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/cost-of-goods-for-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Maximum Products per User for WooCommerce',
-					'desc'             => 'Set maximum quantities based on your store\'s needs. Keep things fair, control stock, and manage sales your way!',
+					'name'             => __('Maximum Products per User for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('Set maximum quantities based on your store\'s needs. Keep things fair, control stock, and manage sales your way!','wpfactory-cross-selling'),
 					'category_slug'    => 'orders-restrictions',
 					'icon_url'         => 'https://ps.w.org/maximum-products-per-user-for-woocommerce/assets/icon.svg',
 					'free_plugin_path' => 'maximum-products-per-user-for-woocommerce/maximum-products-per-user-for-woocommerce.php',
@@ -83,8 +83,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/maximum-products-per-user-for-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Order Minimum/Maximum Amount for WooCommerce',
-					'desc'             => 'Control every order with customizable limits to optimize your sales strategy.',
+					'name'             => __('Order Minimum/Maximum Amount for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('Control every order with customizable limits to optimize your sales strategy.','wpfactory-cross-selling'),
 					'category_slug'    => 'orders-restrictions',
 					'icon_url'         => 'https://ps.w.org/order-minimum-amount-for-woocommerce/assets/icon.svg',
 					'free_plugin_path' => 'order-minimum-amount-for-woocommerce/order-minimum-amount-for-woocommerce.php',
@@ -93,8 +93,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/order-minimum-maximum-amount-for-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'EU VAT Manager for WooCommerce',
-					'desc'             => 'Validate VAT Numbers Automatically and Stay Compliant Across Europe. ensuring your customers have a seamless experience while you handle VAT like a pro.',
+					'name'             => __('EU VAT Manager for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('Validate VAT Numbers Automatically and Stay Compliant Across Europe. ensuring your customers have a seamless experience while you handle VAT like a pro.','wpfactory-cross-selling'),
 					'category_slug'    => 'admin-&-reporting',
 					'icon_url'         => 'https://ps.w.org/eu-vat-for-woocommerce/assets/icon.svg',
 					'free_plugin_path' => 'eu-vat-for-woocommerce/eu-vat-for-woocommerce.php',
@@ -103,8 +103,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/eu-vat-for-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Email Verification for WooCommerce',
-					'desc'             => 'Secure Your WooCommerce Store by preventing fake accounts, and ensuring real customers with user-friendly email verification.',
+					'name'             => __('Email Verification for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('Secure Your WooCommerce Store by preventing fake accounts, and ensuring real customers with user-friendly email verification.','wpfactory-cross-selling'),
 					'category_slug'    => 'admin-&-reporting',
 					'icon_url'         => 'https://ps.w.org/emails-verification-for-woocommerce/assets/icon.svg',
 					'free_plugin_path' => 'emails-verification-for-woocommerce/email-verification-for-woocommerce.php',
@@ -113,8 +113,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/email-verification-for-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Free Shipping Over Amount: Amount Left Tracker for WooCommerce',
-					'desc'             => 'Unlock Higher Sales with Free Shipping Incentives.',
+					'name'             => __('Free Shipping Over Amount: Amount Left Tracker for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('Unlock Higher Sales with Free Shipping Incentives.','wpfactory-cross-selling'),
 					'category_slug'    => 'marketing-&-promotion',
 					'icon_url'         => 'https://ps.w.org/amount-left-free-shipping-woocommerce/assets/icon.svg',
 					'free_plugin_path' => 'amount-left-free-shipping-woocommerce/left-to-free-shipping-for-woocommerce.php',
@@ -123,8 +123,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/amount-left-free-shipping-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Payment Methods by Product & Country for WooCommerce',
-					'desc'             => 'Control payment methods to keep higher profit, boost conversions, and offer a better checkout experience.',
+					'name'             => __('Payment Methods by Product & Country for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('Control payment methods to keep higher profit, boost conversions, and offer a better checkout experience.','wpfactory-cross-selling'),
 					'category_slug'    => 'orders-restrictions',
 					'icon_url'         => 'https://ps.w.org/payment-gateways-per-product-categories-for-woocommerce/assets/icon.svg',
 					'free_plugin_path' => 'payment-gateways-per-product-categories-for-woocommerce/payment-gateways-per-product-for-woocommerce.php',
@@ -133,8 +133,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/payment-gateways-per-product-for-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Product XML Feeds for WooCommerce',
-					'desc'             => 'Create unlimited product XML feeds using this feature-rich plugin, enabling you to generate, customize, and manage XML feeds based on merchant needs. Compatible with various platforms.',
+					'name'             => __('Product XML Feeds for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('Create unlimited product XML feeds using this feature-rich plugin, enabling you to generate, customize, and manage XML feeds based on merchant needs. Compatible with various platforms.','wpfactory-cross-selling'),
 					'category_slug'    => 'admin-&-reporting',
 					'icon_url'         => 'https://ps.w.org/product-xml-feeds-for-woocommerce/assets/icon.svg',
 					'free_plugin_path' => 'product-xml-feeds-for-woocommerce/product-xml-feeds-for-woocommerce.php.php',
@@ -143,8 +143,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/product-xml-feeds-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Popup Notices: Added to Cart, Checkout Popups & More',
-					'desc'             => 'Capture customer attention with eye-catching, customizable popups messages.',
+					'name'             => __('Popup Notices: Added to Cart, Checkout Popups & More','wpfactory-cross-selling'),
+					'desc'             => __('Capture customer attention with eye-catching, customizable popups messages.','wpfactory-cross-selling'),
 					'category_slug'    => 'marketing-&-promotion',
 					'icon_url'         => 'https://ps.w.org/popup-notices-for-woocommerce/assets/icon.svg',
 					'free_plugin_path' => 'popup-notices-for-woocommerce/popup-notices-for-woocommerce.php',
@@ -153,8 +153,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/popup-notices-for-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'EAN and Barcodes for WooCommerce',
-					'desc'             => 'Make Inventory Control a Breeze and Manage Your Products Seamlessly.',
+					'name'             => __('EAN and Barcodes for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('Make Inventory Control a Breeze and Manage Your Products Seamlessly.','wpfactory-cross-selling'),
 					'category_slug'    => 'admin-&-reporting',
 					'icon_url'         => 'https://ps.w.org/ean-for-woocommerce/assets/icon.svg',
 					'free_plugin_path' => 'ean-for-woocommerce/ean-for-woocommerce.php',
@@ -163,8 +163,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/ean-barcodes-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'MSRP (RRP) Pricing for WooCommerce',
-					'desc'             => 'Encourage Purchases by Displaying MSRP and Proving Your Prices Beat the Market.',
+					'name'             => __('MSRP (RRP) Pricing for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('Encourage Purchases by Displaying MSRP and Proving Your Prices Beat the Market.','wpfactory-cross-selling'),
 					'category_slug'    => 'marketing-&-promotion',
 					'icon_url'         => 'https://ps.w.org/msrp-for-woocommerce/assets/icon.svg',
 					'free_plugin_path' => 'msrp-for-woocommerce/msrp-for-woocommerce.php',
@@ -173,8 +173,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/msrp-for-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'File Renaming on Upload – WordPress Plugin',
-					'desc'             => 'Elevate your WP media management with "Rename Media Files on Upload for WordPress" plugin.  Automatically rename media images & files based on rules, sanitizes filenames, and enriches SEO through smart naming conventions.',
+					'name'             => __('File Renaming on Upload – WordPress Plugin','wpfactory-cross-selling'),
+					'desc'             => __('Elevate your WP media management with "Rename Media Files on Upload for WordPress" plugin.  Automatically rename media images & files based on rules, sanitizes filenames, and enriches SEO through smart naming conventions.','wpfactory-cross-selling'),
 					'category_slug'    => 'wordpress-utilities',
 					'icon_url'         => 'https://ps.w.org/file-renaming-on-upload/assets/icon.svg',
 					'free_plugin_path' => 'file-renaming-on-upload/file-renaming-on-upload.php',
@@ -183,8 +183,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/file-renaming-on-upload-wordpress-plugin/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Coupons & Add to Cart by URL for WooCommerce',
-					'desc'             => 'Simplify Shopping with One-Click Coupons and Turn Links into Sales!',
+					'name'             => __('Coupons & Add to Cart by URL for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('Simplify Shopping with One-Click Coupons and Turn Links into Sales!','wpfactory-cross-selling'),
 					'category_slug'    => 'marketing-&-promotion',
 					'icon_url'         => 'https://ps.w.org/url-coupons-for-woocommerce-by-algoritmika/assets/icon.svg',
 					'free_plugin_path' => 'url-coupons-for-woocommerce-by-algoritmika/url-coupons-woocommerce.php',
@@ -193,8 +193,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/url-coupons-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Dynamic Pricing & Bulk Quantity Discounts',
-					'desc'             => 'Boost Larger Orders and Maximize Revenue with Dynamic Pricing.',
+					'name'             => __('Dynamic Pricing & Bulk Quantity Discounts','wpfactory-cross-selling'),
+					'desc'             => __('Boost Larger Orders and Maximize Revenue with Dynamic Pricing.','wpfactory-cross-selling'),
 					'category_slug'    => 'marketing-&-promotion',
 					'icon_url'         => 'https://ps.w.org/wholesale-pricing-woocommerce/assets/icon.svg',
 					'free_plugin_path' => 'wholesale-pricing-woocommerce/wholesale-pricing-woocommerce.php',
@@ -203,8 +203,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/product-price-by-quantity-for-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Download Plugins and Themes from Dashboard',
-					'desc'             => 'Download your WordPress plugins and themes in ZIP files directly from admin dashboard, get any or all plugins & themes without FTP or cPanel access in a single click.',
+					'name'             => __('Download Plugins and Themes from Dashboard','wpfactory-cross-selling'),
+					'desc'             => __('Download your WordPress plugins and themes in ZIP files directly from admin dashboard, get any or all plugins & themes without FTP or cPanel access in a single click.','wpfactory-cross-selling'),
 					'category_slug'    => 'wordpress-utilities',
 					'icon_url'         => 'https://ps.w.org/download-plugins-dashboard/assets/icon.svg',
 					'free_plugin_path' => 'download-plugins-dashboard/download-plugins-from-dashboard.php',
@@ -213,8 +213,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/download-plugins-and-themes-from-dashboard/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Back Button Widget - WordPress Plugin',
-					'desc'             => 'Simplify navigation on your WordPress site with the "Back Button Widget" plugin, a light-weight & user-friendly tool to show a "Back" button anywhere on your website.',
+					'name'             => __('Back Button Widget - WordPress Plugin','wpfactory-cross-selling'),
+					'desc'             => __('Simplify navigation on your WordPress site with the "Back Button Widget" plugin, a light-weight & user-friendly tool to show a "Back" button anywhere on your website.','wpfactory-cross-selling'),
 					'category_slug'    => 'wordpress-utilities',
 					'icon_url'         => 'https://ps.w.org/back-button-widget/assets/icon.svg',
 					'free_plugin_path' => 'back-button-widget/back-button-widget.php',
@@ -223,8 +223,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/back-button-widget-wordpress-plugin/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Slugs Manager: Delete Old Permalinks ',
-					'desc'             => 'Optimize Your Site Performance by Cleaning Up Old and Unused Permalinks Effortlessly.',
+					'name'             => __('Slugs Manager: Delete Old Permalinks ','wpfactory-cross-selling'),
+					'desc'             => __('Optimize Your Site Performance by Cleaning Up Old and Unused Permalinks Effortlessly.','wpfactory-cross-selling'),
 					'category_slug'    => 'wordpress-utilities',
 					'icon_url'         => 'https://ps.w.org/remove-old-slugspermalinks/assets/icon.svg',
 					'free_plugin_path' => 'remove-old-slugspermalinks/remove-old-slugs.php',
@@ -233,8 +233,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'pro_plugin_url'   => 'https://wpfactory.com/item/slugs-manager-wordpress-plugin/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
-					'name'             => 'Name Your Price: Make a Price Offer for WooCommerce',
-					'desc'             => 'A great way to engage shoppers and drive sales through customer-driven pricing.',
+					'name'             => __('Name Your Price: Make a Price Offer for WooCommerce','wpfactory-cross-selling'),
+					'desc'             => __('A great way to engage shoppers and drive sales through customer-driven pricing.','wpfactory-cross-selling'),
 					'category_slug'    => 'marketing-&-promotion',
 					'icon_url'         => 'https://ps.w.org/price-offerings-for-woocommerce/assets/icon.svg',
 					'free_plugin_path' => 'price-offerings-for-woocommerce/price-offerings-for-woocommerce.php',

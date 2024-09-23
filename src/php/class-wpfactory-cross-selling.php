@@ -90,6 +90,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 		 * @return void
 		 */
 		function setup( $args = null ) {
+			$this->localize();
+
 			$args = wp_parse_args( $args, array(
 				'plugin_file_path'   => '',
 				'plugin_action_link' => array(),
@@ -146,6 +148,42 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 
 			// Enqueues admin syles.
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
+		}
+
+		/**
+		 * Localizes the plugin.
+		 *
+		 * @version 1.0.0
+		 * @since   1.0.0
+		 *
+		 * @return void
+		 */
+		public function localize() {
+			$domain = 'wpfactory-cross-selling';
+			$locale = get_locale();
+			$mofile = dirname( $this->get_library_file_path() ) . '/langs/' . $domain . '-' . $locale . '.mo';
+			load_textdomain( $domain, $mofile );
+		}
+
+		/**
+		 * Runs the add_action() callback if the hook_name is the current_filter.
+		 *
+		 * @version 1.0.0
+		 * @since   1.0.0
+		 *
+		 * @param $hook_name
+		 * @param $callback
+		 * @param $priority
+		 * @param $accepted_args
+		 *
+		 * @return void
+		 */
+		function add_action( $hook_name, $callback, $priority = 10, $accepted_args = 1 ) {
+			if ( $hook_name === current_filter() ) {
+				$callback();
+			} else {
+				add_action( $hook_name, $callback, $priority, $accepted_args );
+			}
 		}
 
 		/**
@@ -310,10 +348,10 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 		 * @return array
 		 */
 		function add_action_links( $links ) {
+			$this->localize();
 			$setup_args  = $this->get_setup_args();
 			$action_link = $setup_args['plugin_action_link'] ?? '';
 			$label       = $action_link['label'] ?? '';
-			//$link           = admin_url( 'options-general.php?page=' . $this->admin_page_slug );
 			$link           = admin_url( 'admin.php?page=' . $this->submenu_page_slug );
 			$target         = '_self';
 			$custom_links[] = sprintf( '<a href="%s" target="%s">%s</a>', esc_url( $link ), sanitize_text_field( $target ), sanitize_text_field( $label ) );

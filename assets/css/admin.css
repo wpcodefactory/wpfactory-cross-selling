@@ -67,10 +67,11 @@
   justify-content: flex-start; /* Aligns items horizontally (in a row) */
   align-items: center; /* Centers items vertically */
   gap: 18px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 @media (max-width: 800px) {
   .wpfcs-product {
+    flex-wrap: wrap;
     justify-content: center;
   }
 }
@@ -92,9 +93,10 @@
   justify-content: flex-start; /* Aligns items horizontally (in a row) */
   align-items: center;
   gap: 10px;
+  min-width: 239px;
 }
 @media (max-width: 800px) {
-  .wpfcs-product-actions .wpfcs-product-actions {
+  .wpfcs-product-actions {
     margin-left: 0;
     margin-left: initial;
     padding-left: 0;

@@ -6,13 +6,14 @@
 	justify-content: flex-start; /* Aligns items horizontally (in a row) */
 	align-items: center; /* Centers items vertically */
 	gap: 18px;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 
 	&.disabled {
 		@extend %disabled;
 	}
 
 	@media (max-width: 800px) {
+		flex-wrap: wrap;
 		justify-content: center;
 	}
 }
@@ -34,13 +35,12 @@
 	justify-content: flex-start; /* Aligns items horizontally (in a row) */
 	align-items: center;
 	gap: 10px;
+	min-width:239px;
 
 	@media (max-width: 800px) {
-		.wpfcs-product-actions {
-			margin-left: unset;
-			padding-left: 0;
-			border-left: none;
-		}
+		margin-left: unset;
+		padding-left: 0;
+		border-left: none;
 	}
 }
 

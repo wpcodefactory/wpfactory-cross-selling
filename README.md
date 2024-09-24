@@ -1,6 +1,66 @@
 # WPFactory Cross-Selling
 A library designed for WPFactory plugins, aimed at cross-selling by offering WPFactory product recommendations
 
+## Installation
+
+Installation via Composer. Instructions to setup the `composer.json`.
+
+1. Add these objects to the `repositories` array:
+
+```json
+"repositories": [    
+    {
+      "type": "vcs",
+      "url": "https://github.com/wpcodefactory/wpfactory-cross-selling"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/wpcodefactory/wpfactory-admin-menu"
+    }
+]
+```
+
+2. Require the library and its dependencies:
+
+```json
+"require": {
+  "wpfactory/wpfactory-cross-selling": "*", 
+  "wpfactory/wpfactory-admin-menu": "*"
+},
+```
+
+3. Use `preferred-install` parameter set as `dist` on `config`.
+
+```json
+"config": {
+  "preferred-install": "dist"
+}
+```
+
+**Full Example:**
+
+```json
+{
+  "repositories": [    
+    {
+      "type": "vcs",
+      "url": "https://github.com/wpcodefactory/wpfactory-cross-selling"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/wpcodefactory/wpfactory-admin-menu"
+    }
+  ],
+  "require": {    
+    "wpfactory/wpfactory-cross-selling": "*",
+    "wpfactory/wpfactory-admin-menu": "*"
+  },
+  "config": {
+    "preferred-install": "dist"
+  }
+}
+```
+
 ## How to use it?
 1. Create/Put the composer.json on the root folder.
 

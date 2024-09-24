@@ -71,7 +71,7 @@ require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 
 3. Then initialize the library with `new \WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling()` from within the main plugin class. Probably the best place is inside the hook `plugins_loaded`. If the main class is already being loaded with that hook, you can simply load the library in the class constructor.
 > [!NOTE]  
-> Try to remember to only run inside a `is_admin()` check.
+> Try to remember to only run it inside a `is_admin()` check.
 
 *Example:*
 

@@ -17,7 +17,7 @@ require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 
 ```php
 add_action( 'plugins_loaded', function(){  
-  $main_plugin_class = new Main_Plugin_Class();  
+    $main_plugin_class = new Main_Plugin_Class();  
 } );
 ```
 
@@ -43,5 +43,6 @@ class Main_Plugin_Class(){
         ) );
         $cross_selling->init()
     }
+
 }
 ```

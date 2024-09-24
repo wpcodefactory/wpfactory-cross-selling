@@ -106,3 +106,17 @@ class Main_Plugin_Class(){
 
 }
 ```
+
+## Methods
+
+### `setup( array $args = null )`
+
+Setups the plugin. 
+
+**Parameters:**
+
+* **`plugin_file_path`** (string) - Plugin file path.
+
+* **`plugin_action_link`** (array)
+  * **`enabled`** (boolean) - Enables/disables the plugin action link. Default value: `true`.      
+  * **`label`** (string) - Plugin action link label. Default value: `'Recommendations'`.

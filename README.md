@@ -95,12 +95,7 @@ class Main_Plugin_Class(){
 
         // Initializes WPFactory Key Manager library.
         $cross_selling = new \WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling();
-        $cross_selling->setup( array(
-            'plugin_file_path'   => __FILE__,
-            'plugin_action_link' => array(
-                'enabled' => true
-              ),
-        ) );
+        $cross_selling->setup( array( 'plugin_file_path'   => __FILE__ ) );
         $cross_selling->init()
     }
 
@@ -117,6 +112,6 @@ Setups the plugin.
 
 * **`plugin_file_path`** (string) - Plugin file path.
 
-* **`plugin_action_link`** (array)
-  * **`enabled`** (boolean) - Enables/disables the plugin action link. Default value: `true`.      
-  * **`label`** (string) - Plugin action link label. Default value: `'Recommendations'`.
+### `init()`
+
+Initializes the library.

@@ -111,6 +111,9 @@ Setups the plugin.
 **Parameters:**
 
 * **`plugin_file_path`** (string) - Plugin file path.
+* **`plugin_action_link`** (array)
+  * **`enabled`** (boolean) - Enables/Disabled the plugin action link. Default value: `true`.      
+  * **`label`** (string) - Label for the plugin action link. Default value: `'Recommendations'`.
 
 ### `init()`
 

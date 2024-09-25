@@ -12,6 +12,10 @@
 		@extend %disabled;
 	}
 
+	&.readonly {
+		@extend %readonly;
+	}
+
 	@media (max-width: 800px) {
 		flex-wrap: wrap;
 		justify-content: center;
@@ -20,6 +24,15 @@
 
 .wpfcs-product-title {
 	margin: 0 0 7px;
+
+	a {
+		text-decoration: none;
+		color: unset;
+
+		&:hover {
+			color: #135e96;
+		}
+	}
 }
 
 .wpfcs-product-desc {
@@ -35,7 +48,7 @@
 	justify-content: flex-start; /* Aligns items horizontally (in a row) */
 	align-items: center;
 	gap: 10px;
-	min-width:239px;
+	min-width: 239px;
 
 	@media (max-width: 800px) {
 		margin-left: unset;
@@ -47,11 +60,17 @@
 .wpfcs-product-img-wrapper {
 	width: 60px;
 	height: 60px;
+	min-width: 60px;
 	background: rgb(255, 255, 255);
 	background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(190, 233, 252, 1) 100%);
 	display: flex;
 	justify-content: center;
 	align-items: center;
+
+	* {
+		font-size: 0;
+		display: flex;
+	}
 }
 
 .wpfcs-product-img-wrapper img {

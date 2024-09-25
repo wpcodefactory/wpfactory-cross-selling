@@ -106,7 +106,7 @@ class Main_Plugin_Class(){
 
 ### `setup( array $args = null )`
 
-Setups the plugin. 
+Setups the library. 
 
 **Parameters:**
 

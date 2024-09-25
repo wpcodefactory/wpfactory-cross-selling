@@ -118,3 +118,17 @@ Setups the plugin.
 ### `init()`
 
 Initializes the library.
+
+## Full example:
+
+```php
+$cross_selling = new \WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling();
+$cross_selling->setup( array(
+    'plugin_file_path'   => $this->get_filesystem_path(),
+    'plugin_action_link' => array(
+        'enabled' => true,
+        'label'   => 'More plugins'
+    ),
+) );
+$cross_selling->init();
+```

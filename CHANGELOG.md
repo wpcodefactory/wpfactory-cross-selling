@@ -8,6 +8,6 @@
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities
 
-## [1.0.0] - 2024-09-26
+## [1.0.0] - 2024-09-27
 ### Added
 * Initial release.

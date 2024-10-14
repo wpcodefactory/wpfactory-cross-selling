@@ -8,6 +8,10 @@
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities
 
+## [1.0.2] - 2024-10-14
+### Fixed
+* Capability by managing it later.
+
 ## [1.0.1] - 2024-10-14
 ### Fixed
 * Capability to `manage_woocommerce` if woocommerce is enabled, or else `manage_options`.

@@ -8,6 +8,13 @@
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities
 
+## [1.0.1] - 2024-10-14
+### Fixed
+* Capability to `manage_woocommerce` if woocommerce is enabled, or else `manage_options`.
+
+### Removed
+* SCSS files from archive files.
+
 ## [1.0.0] - 2024-09-27
 ### Added
 * Initial release.

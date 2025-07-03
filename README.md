@@ -8,15 +8,15 @@ Installation via Composer. Instructions to setup the `composer.json`.
 1. Add these objects to the `repositories` array:
 
 ```json
-"repositories": [    
-    {
-      "type": "vcs",
-      "url": "https://github.com/wpcodefactory/wpfactory-cross-selling"
-    },
-    {
-      "type": "vcs",
-      "url": "https://github.com/wpcodefactory/wpfactory-admin-menu"
-    }
+"repositories": [
+{
+"type": "vcs",
+"url": "https://github.com/wpcodefactory/wpfactory-cross-selling"
+},
+{
+"type": "vcs",
+"url": "https://github.com/wpcodefactory/wpfactory-admin-menu"
+}
 ]
 ```
 
@@ -24,8 +24,8 @@ Installation via Composer. Instructions to setup the `composer.json`.
 
 ```json
 "require": {
-  "wpfactory/wpfactory-cross-selling": "*", 
-  "wpfactory/wpfactory-admin-menu": "*"
+"wpfactory/wpfactory-cross-selling": "*",
+"wpfactory/wpfactory-admin-menu": "*"
 },
 ```
 
@@ -33,7 +33,7 @@ Installation via Composer. Instructions to setup the `composer.json`.
 
 ```json
 "config": {
-  "preferred-install": "dist"
+"preferred-install": "dist"
 }
 ```
 
@@ -41,7 +41,7 @@ Installation via Composer. Instructions to setup the `composer.json`.
 
 ```json
 {
-  "repositories": [    
+  "repositories": [
     {
       "type": "vcs",
       "url": "https://github.com/wpcodefactory/wpfactory-cross-selling"
@@ -51,7 +51,7 @@ Installation via Composer. Instructions to setup the `composer.json`.
       "url": "https://github.com/wpcodefactory/wpfactory-admin-menu"
     }
   ],
-  "require": {    
+  "require": {
     "wpfactory/wpfactory-cross-selling": "*",
     "wpfactory/wpfactory-admin-menu": "*"
   },
@@ -104,13 +104,13 @@ class Main_Plugin_Class(){
 
 ### `setup( array $args = null )`
 
-Setups the library. 
+Setups the library.
 
 **Parameters:**
 
 * **`plugin_file_path`** (string) - Plugin file path.
 * **`plugin_action_link`** (array)
-  * **`enabled`** (boolean) - Enables/Disabled the plugin action link. Default value: `true`.      
+  * **`enabled`** (boolean) - Enables/Disabled the plugin action link. Default value: `true`.
   * **`label`** (string) - Label for the plugin action link. Default value: `'Recommendations'`.
 
 ### `init()`

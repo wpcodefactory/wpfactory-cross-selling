@@ -64,12 +64,7 @@ Installation via Composer. Instructions to setup the `composer.json`.
 ## How to use it?
 1. Create/Put the composer.json on the root folder.
 
-2. Require the Composer `autoload.php` on main plugin file. Most of our plugins are already doing it. Example:
-```php
-require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
-```
-
-3. Then initialize the library with `new \WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling()` from within the main plugin class. Probably the best place is inside the hook `plugins_loaded`. If the main class is already being loaded with that hook, you can simply load the library in the class constructor.
+2. Then initialize the library with `new \WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling()` from within the main plugin class. Probably the best place is inside the hook `plugins_loaded`. If the main class is already being loaded with that hook, you can simply load the library in the class constructor.
 > [!NOTE]  
 > Try to remember to only run it inside a `is_admin()` check.
 
@@ -92,6 +87,9 @@ class Main_Plugin_Class(){
         if ( ! is_admin() ) {
             return;
         }
+
+        // Composer.
+        require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 
         // Initializes WPFactory Key Manager library.
         $cross_selling = new \WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling();

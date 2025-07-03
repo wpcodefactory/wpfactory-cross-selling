@@ -143,3 +143,60 @@
   height: auto;
   width: auto;
 }
+
+.wrap.woocommerce .form-table {
+  table-layout: auto;
+}
+.wrap.woocommerce .wpfcs-wc-settings-wrapper {
+  width: auto;
+  table-layout: auto;
+}
+@media (min-width: 1100px) {
+  .wrap.woocommerce .wpfcs-wc-settings-wrapper {
+    float: left;
+    max-width: 55%;
+    margin: 0 4% 0 0;
+  }
+}
+.wrap.woocommerce p.submit {
+  clear: both;
+}
+
+.wpfcs-recommendations-box {
+  background: #F3F3F3;
+  padding: 0;
+  display: inline-block;
+}
+@media (min-width: 1100px) {
+  .wpfcs-recommendations-box {
+    float: left;
+    max-width: 41%;
+    margin: 0;
+  }
+}
+.wpfcs-recommendations-box .tab-links a {
+  padding: 10px;
+  -webkit-text-decoration: none;
+  text-decoration: none;
+  background: #eee;
+  margin-right: 5px;
+}
+.wpfcs-recommendations-box .tab-content {
+  display: none;
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+.wpfcs-recommendations-box .tab-content:target {
+  display: block;
+}
+
+.wpfcs-recommendation-box-title {
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 100%;
+  margin: 0;
+}
+
+body:not(:has(:target)) #wpfcs-recommendation-box-tab-0 {
+  display: block;
+}

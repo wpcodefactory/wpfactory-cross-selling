@@ -1,0 +1,60 @@
+.wrap.woocommerce {
+	.form-table {
+		table-layout: auto;
+	}
+
+	.wpfcs-wc-settings-wrapper {
+		width: auto;
+		table-layout: auto;
+		@media (min-width: 1100px) {
+			float: left;
+			max-width: 55%;
+			margin: 0 4% 0 0;
+		}
+	}
+
+	p.submit {
+		clear: both;
+	}
+}
+
+.wpfcs-recommendations-box {
+	background: #F3F3F3;
+	padding: 0;
+	display: inline-block;
+	@media (min-width: 1100px) {
+		float: left;
+		max-width: 41%;
+		margin: 0;
+	}
+
+	.tab-links a {
+		padding: 10px;
+		text-decoration: none;
+		background: #eee;
+		margin-right: 5px;
+	}
+
+	.tab-content {
+		display: none;
+		padding: 10px;
+		border: 1px solid #ccc;
+	}
+
+	.tab-content:target {
+		display: block;
+	}
+
+}
+
+.wpfcs-recommendation-box-title {
+	font-weight: 700;
+	font-size: 26px;
+	line-height: 100%;
+	margin: 0;
+}
+
+
+body:not(:has(:target)) #wpfcs-recommendation-box-tab-0 {
+	display: block;
+}

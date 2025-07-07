@@ -110,20 +110,69 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Recommendations_Box' ) )
 				<h3 class="wpfcs-recommendation-box-title">
 					Recommended Plugins
 				</h3>
-				<div class="tab-links">
-					<?php $i = 0; ?>
-					<?php foreach ( $box_tags as $tag ): ?>
-						<a href="#wpfcs-recommendation-box-tab-<?php echo esc_attr( $i ) ?>"><?php echo esc_html( $tag['name'] ) ?></a>
-						<?php $i ++; ?>
-					<?php endforeach; ?>
-				</div>
-				<div id="wpfcs-recommendation-box-tab-0" class="tab-content">
-					Content for Tab 1
-				</div>
-				<div id="wpfcs-recommendation-box-tab-1" class="tab-content">
-					Content for Tab 2
+				<div class="wpfcs-tabs-mechanism">
+					<div class="wpfcs-tab-links">
+						<?php $i = 0; ?>
+						<?php foreach ( $box_tags as $tag ): ?>
+							<a href="#wpfcs-<?php echo esc_attr( $tag['slug'] ) ?>"><?php echo esc_html( $tag['name'] ) ?></a>
+							<?php $i ++; ?>
+						<?php endforeach; ?>
+					</div>
+					<div id="wpfcs-top-picks" class="wpfcs-tab-content">
+						Content for Tab 1
+					</div>
+					<div id="wpfcs-must-have" class="wpfcs-tab-content">
+						Content for Tab 2
+					</div>
 				</div>
 			</div>
+			<?php
+			$this->add_recommendation_box_js();
+		}
+
+		/**
+		 * add_recommendation_box_js.
+		 *
+		 * @version 1.0.4
+		 * @since   1.0.4
+		 *
+		 * @return void
+		 */
+		function add_recommendation_box_js(){
+			?>
+			<script>
+				function setActiveTab() {
+					const links = document.querySelectorAll( '.wpfcs-tab-links a' );
+					const contents = document.querySelectorAll( '.wpfcs-tab-content' );
+
+					let hash = window.location.hash;
+					let activeLink = null;
+					let activeContent = null;
+
+					// Find matching content
+					if ( hash && document.querySelector( hash ) ) {
+						activeLink = document.querySelector( `.wpfcs-tab-links a[href="${ hash }"]` );
+						activeContent = document.querySelector( hash );
+					}
+
+					// Fallback to the first tab if hash is invalid or missing.
+					if ( !activeLink || !activeContent ) {
+						activeLink = links[ 0 ];
+						activeContent = contents[ 0 ];
+					}
+
+					// Clear all actives.
+					links.forEach( link => link.classList.remove( 'active' ) );
+					contents.forEach( content => content.classList.remove( 'active' ) );
+
+					// Activate the right ones.
+					if ( activeLink ) activeLink.classList.add( 'active' );
+					if ( activeContent ) activeContent.classList.add( 'active' );
+				}
+
+				window.addEventListener('load', setActiveTab);
+				window.addEventListener('hashchange', setActiveTab);
+			</script>
 			<?php
 		}
 

@@ -163,7 +163,6 @@
 }
 
 .wpfcs-recommendations-box {
-  background: #F3F3F3;
   padding: 0;
   display: inline-block;
 }
@@ -174,29 +173,43 @@
     margin: 0;
   }
 }
-.wpfcs-recommendations-box .tab-links a {
-  padding: 10px;
+.wpfcs-recommendations-box .wpfcs-tab-content {
+  display: none;
+  padding: 22px 30px;
+  background: #fff;
+}
+.wpfcs-recommendations-box .wpfcs-tab-content.active {
+  display: block;
+}
+.wpfcs-recommendations-box .wpfcs-tab-links a {
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #8D8D8D;
   -webkit-text-decoration: none;
   text-decoration: none;
-  background: #eee;
-  margin-right: 5px;
+  padding: 10px 15px;
+  display: inline-block;
 }
-.wpfcs-recommendations-box .tab-content {
-  display: none;
-  padding: 10px;
-  border: 1px solid #ccc;
+.wpfcs-recommendations-box .wpfcs-tab-links a.active {
+  color: #000;
+  background: #fff;
 }
-.wpfcs-recommendations-box .tab-content:target {
-  display: block;
+.wpfcs-recommendations-box .wpfcs-tab-links a:hover {
+  color: #000;
+}
+.wpfcs-recommendations-box .wpfcs-tab-links a:focus {
+  outline: none;
+  box-shadow: none;
+}
+.wpfcs-recommendations-box .wpfcs-tabs-mechanism {
+  background: #F3F3F3;
 }
 
 .wpfcs-recommendation-box-title {
   font-weight: 700;
   font-size: 26px;
   line-height: 100%;
-  margin: 0;
-}
-
-body:not(:has(:target)) #wpfcs-recommendation-box-tab-0 {
-  display: block;
+  margin: 0 0 30px 0;
 }

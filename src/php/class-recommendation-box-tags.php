@@ -48,7 +48,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Recommendation_Box_Tags'
 				),
 				array(
 					'name' => 'Must-have',
-					'slug' => 'mush-have',
+					'slug' => 'must-have',
 				),
 				array(
 					'name' => 'Conversation Boosters',

@@ -108,21 +108,38 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Recommendations_Box' ) )
 			?>
 			<div class="wpfcs-recommendations-box">
 				<h3 class="wpfcs-recommendation-box-title">
-					Recommended Plugins
+					<?php _e( 'Recommended Plugins', 'wpfactory-cross-selling' ) ?>
 				</h3>
 				<div class="wpfcs-tabs-mechanism">
 					<div class="wpfcs-tab-links">
-						<?php $i = 0; ?>
 						<?php foreach ( $box_tags as $tag ): ?>
 							<a href="#wpfcs-<?php echo esc_attr( $tag['slug'] ) ?>"><?php echo esc_html( $tag['name'] ) ?></a>
-							<?php $i ++; ?>
 						<?php endforeach; ?>
 					</div>
-					<div id="wpfcs-top-picks" class="wpfcs-tab-content">
-						Content for Tab 1
+					<?php foreach ( $box_tags as $tag ): ?>
+						<div id="wpfcs-<?php echo esc_attr( $tag['slug'] ) ?>" class="wpfcs-tab-content">
+							<?php foreach ( wp_list_filter( $products, array( 'tag_slug' => $tag['slug'] ) ) as $product_data ) : ?>
+								<div class="wpfcs-tab-content-item">
+									<?php echo $this->get_wpfactory_cross_selling()->get_template( 'recommendation-box-item.php', array(
+										'product_data'            => $product_data,
+										'free_version_installed'  => $this->get_wpfactory_cross_selling()->is_plugin_installed( $product_data['free_plugin_path'] ),
+										'pro_version_installed'   => $this->get_wpfactory_cross_selling()->is_plugin_installed( $product_data['pro_plugin_path'] ),
+										'free_plugin_install_url' => $this->get_wpfactory_cross_selling()->generate_free_plugin_install_url( $product_data['free_plugin_slug'] ),
+										'pro_plugin_url'          => $product_data['pro_plugin_url']
+									) ); ?>
+								</div>
+							<?php endforeach; ?>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<div class="wpfcs-banners">
+					<div class="wpfcs-banner">
+						<?php $banner_img_src = plugins_url( 'assets/img/banner-1.png', $this->get_wpfactory_cross_selling()->get_setup_args()['library_root_path'] ) ?>
+						<a href=""><img src="<?php echo esc_attr( $banner_img_src ); ?>"/></a>
 					</div>
-					<div id="wpfcs-must-have" class="wpfcs-tab-content">
-						Content for Tab 2
+					<div class="wpfcs-banner">
+						<?php $banner_img_src = plugins_url( 'assets/img/banner-2.png', $this->get_wpfactory_cross_selling()->get_setup_args()['library_root_path'] ) ?>
+						<a href=""><img src="<?php echo esc_attr( $banner_img_src ); ?>"/></a>
 					</div>
 				</div>
 			</div>

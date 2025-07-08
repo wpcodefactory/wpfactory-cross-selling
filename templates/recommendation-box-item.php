@@ -25,11 +25,6 @@ $product_class                = $pro_version_installed ? 'readonly' : '';
 		<p class="wpfcs-product-desc"><?php echo esc_html( $product_data['desc'] ) ?></p>
 	</div>
 	<div class="wpfcs-product-actions">
-		<a href="<?php echo esc_url( $free_plugin_install_url ) ?>" class="wpfcs-button wpfcs-button-1 <?php echo esc_attr( $free_version_installed_class ) ?>"><i class="dashicons-before dashicons dashicons-download"></i>
-			<?php _e( 'Get free', 'wpfactory-cross-selling' ) ?>
-		</a>
-		<a href="<?php echo esc_url( $pro_plugin_url ) ?>" target="_blank" class="wpfcs-button wpfcs-button-2 <?php echo esc_attr( $pro_version_installed_class ) ?>"><i class="dashicons-before dashicons dashicons-external"></i>
-			<?php _e( 'Buy Pro', 'wpfactory-cross-selling' ) ?>
-		</a>
+		<a href="<?php echo esc_url( $pro_plugin_url ) ?>" target="_blank" class="wpfcs-button wpfcs-button-2 <?php echo esc_attr( $pro_version_installed_class ) ?>"><i class="dashicons-before dashicons dashicons-external"></i></a>
 	</div>
 </div>

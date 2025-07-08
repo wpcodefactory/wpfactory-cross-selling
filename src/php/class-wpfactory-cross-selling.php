@@ -111,6 +111,10 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 				'position' => array( 'wc_settings_tab' ),
 			) );
 
+			// Library file path.
+			$args['library_file_path'] = __FILE__;
+			$args['library_root_path'] = plugin_dir_path( dirname( __FILE__ ) );
+
 			$this->setup_args = $args;
 		}
 

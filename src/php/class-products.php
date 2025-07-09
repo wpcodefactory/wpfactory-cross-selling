@@ -43,6 +43,17 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 		function get_products() {
 			$this->products = array(
 				array(
+					'name'             => __('EAN Barcode Generator for WooCommerce: UPC, ISBN & GTIN Inventory','wpfactory-cross-selling'),
+					'desc'             => __('Make Inventory Control a Breeze and Manage Your Products Seamlessly.','wpfactory-cross-selling'),
+					'category_slug'    => 'admin-&-reporting',
+					'icon_url'         => 'https://ps.w.org/ean-for-woocommerce/assets/icon.svg',
+					'tag_slug'         => 'top-picks',
+					'free_plugin_path' => 'ean-for-woocommerce/ean-for-woocommerce.php',
+					'free_plugin_slug' => 'ean-for-woocommerce',
+					'pro_plugin_path'  => 'ean-for-woocommerce-pro/ean-for-woocommerce-pro.php',
+					'pro_plugin_url'   => 'https://wpfactory.com/item/ean-barcodes-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
+				),
+				array(
 					'name'             => __('Wishlist for WooCommerce','wpfactory-cross-selling'),
 					'desc'             => __('Encourage More Purchases by Offering Easy Multi-Wishlist Creation and Sharing Features.','wpfactory-cross-selling'),
 					'category_slug'    => 'marketing-&-promotion',
@@ -158,17 +169,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Products' ) ) {
 					'free_plugin_slug' => 'popup-notices-for-woocommerce',
 					'pro_plugin_path'  => 'popup-notices-for-woocommerce-pro/popup-notices-for-woocommerce-pro.php',
 					'pro_plugin_url'   => 'https://wpfactory.com/item/popup-notices-for-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
-				),
-				array(
-					'name'             => __('EAN Barcode Generator for WooCommerce: UPC, ISBN & GTIN Inventory','wpfactory-cross-selling'),
-					'desc'             => __('Make Inventory Control a Breeze and Manage Your Products Seamlessly.','wpfactory-cross-selling'),
-					'category_slug'    => 'admin-&-reporting',
-					'icon_url'         => 'https://ps.w.org/ean-for-woocommerce/assets/icon.svg',
-					'tag_slug'         => 'top-picks',
-					'free_plugin_path' => 'ean-for-woocommerce/ean-for-woocommerce.php',
-					'free_plugin_slug' => 'ean-for-woocommerce',
-					'pro_plugin_path'  => 'ean-for-woocommerce-pro/ean-for-woocommerce-pro.php',
-					'pro_plugin_url'   => 'https://wpfactory.com/item/ean-barcodes-woocommerce/?utm_source=plugin&utm_medium=cross-selling&utm_campaign=wpfactory'
 				),
 				array(
 					'name'             => __('MSRP (RRP) Pricing for WooCommerce','wpfactory-cross-selling'),

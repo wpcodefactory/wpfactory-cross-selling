@@ -30,7 +30,9 @@ add_action( 'plugins_loaded', function () {
 	$cross_selling->setup( array(
 		'plugin_file_path'     => $fake_plugin_file_path,
 		'wc_settings_tab_id'   => 'products',
-		'recommendations_box'  => array(),
+		'recommendations_box'  => array(
+			//'enable'=>false
+		),
 		'recommendations_page' => array(
 			'action_link' => array(
 				//'enable' => true,

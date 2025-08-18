@@ -2,7 +2,7 @@
 /**
  * WPFactory Cross-Selling - Recommendations Box.
  *
- * @version 1.0.0
+ * @version 1.0.5
  * @since   1.0.0
  * @author  WPFactory
  */
@@ -33,7 +33,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Recommendations_Box' ) )
 		/**
 		 * Initializes the class.
 		 *
-		 * @version 1.0.4
+		 * @version 1.0.5
 		 * @since   1.0.4
 		 *
 		 * @return void
@@ -48,7 +48,10 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Recommendations_Box' ) )
 			// Enqueue admin css.
 			add_filter( 'wpfcs_enqueue_admin_css', array( $this, 'enqueue_wcfcs_css_on_recommendations_box' ) );
 
-			if ( in_array( 'wc_settings_tab', $setup_args['recommendations_box']['position'] ) ) {
+			if (
+				in_array( 'wc_settings_tab', $setup_args['recommendations_box']['position'] ) &&
+				! empty( $setup_args['recommendations_box']['wc_settings_tab_id'] )
+			) {
 				// Wrap WC settings.
 				add_action( 'woocommerce_settings_' . $setup_args['recommendations_box']['wc_settings_tab_id'], array( $this, 'wrap_wc_settings_start' ), 9 );
 				add_action( 'woocommerce_settings_' . $setup_args['recommendations_box']['wc_settings_tab_id'], array( $this, 'wrap_wc_settings_end' ), 11 );

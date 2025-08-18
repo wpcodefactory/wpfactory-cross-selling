@@ -2,7 +2,7 @@
 /**
  * WPFactory Cross-Selling
  *
- * @version 1.0.4
+ * @version 1.0.5
  * @since   1.0.0
  * @author  WPFactory
  */
@@ -32,7 +32,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 		 *
 		 * @var string
 		 */
-		protected $version = '1.0.4-dev-20250703-2028';
+		protected $version = '1.0.5';
 
 		/**
 		 * Setup args.
@@ -82,7 +82,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 		/**
 		 * Setups the class.
 		 *
-		 * @version 1.0.4
+		 * @version 1.0.5
 		 * @since   1.0.0
 		 *
 		 * @param $args
@@ -115,8 +115,9 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 
 			// Recommendations box.
 			$args['recommendations_box'] = wp_parse_args( $args['recommendations_box'], array(
-				'enable'   => true,
-				'position' => array( 'wc_settings_tab' ),
+				'enable'             => true,
+				'position'           => array( 'wc_settings_tab' ),
+				'wc_settings_tab_id' => '',
 			) );
 
 			// Library file path.

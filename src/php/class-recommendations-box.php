@@ -41,15 +41,21 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Recommendations_Box' ) )
 		function init() {
 			$setup_args = $this->get_wpfactory_cross_selling()->get_setup_args();
 
+			if ( ! $setup_args['recommendations_box']['enable'] ) {
+				return;
+			}
+
 			// Enqueue admin css.
 			add_filter( 'wpfcs_enqueue_admin_css', array( $this, 'enqueue_wcfcs_css_on_recommendations_box' ) );
 
-			// Wrap WC settings.
-			add_action( 'woocommerce_settings_' . $setup_args['wc_settings_tab_id'], array( $this, 'wrap_wc_settings_start' ), 9 );
-			add_action( 'woocommerce_settings_' . $setup_args['wc_settings_tab_id'], array( $this, 'wrap_wc_settings_end' ), 11 );
+			if ( in_array( 'wc_settings_tab', $setup_args['recommendations_box']['position'] ) ) {
+				// Wrap WC settings.
+				add_action( 'woocommerce_settings_' . $setup_args['recommendations_box']['wc_settings_tab_id'], array( $this, 'wrap_wc_settings_start' ), 9 );
+				add_action( 'woocommerce_settings_' . $setup_args['recommendations_box']['wc_settings_tab_id'], array( $this, 'wrap_wc_settings_end' ), 11 );
 
-			// Render Recommendations box.
-			add_action( 'woocommerce_settings_' . $setup_args['wc_settings_tab_id'], array( $this, 'render_recommendations_box' ), 15 );
+				// Render Recommendations box.
+				add_action( 'woocommerce_settings_' . $setup_args['recommendations_box']['wc_settings_tab_id'], array( $this, 'render_recommendations_box' ), 15 );
+			}
 		}
 
 		/**
@@ -105,6 +111,9 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Recommendations_Box' ) )
 			$box_tags_class = new Recommendation_Box_Tags();
 			$box_tags       = $box_tags_class->get_tags();
 
+			// Banners.
+			$banners = $this->get_wpfactory_cross_selling()->banners->get_banners();
+
 			?>
 			<div class="wpfcs-recommendations-box">
 				<h3 class="wpfcs-recommendation-box-title">
@@ -119,28 +128,29 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Recommendations_Box' ) )
 					<?php foreach ( $box_tags as $tag ): ?>
 						<div id="wpfcs-<?php echo esc_attr( $tag['slug'] ) ?>" class="wpfcs-tab-content">
 							<?php foreach ( wp_list_filter( $products, array( 'tag_slug' => $tag['slug'] ) ) as $product_data ) : ?>
-								<div class="wpfcs-tab-content-item">
-									<?php echo $this->get_wpfactory_cross_selling()->get_template( 'recommendation-box-item.php', array(
-										'product_data'            => $product_data,
-										'free_version_installed'  => $this->get_wpfactory_cross_selling()->is_plugin_installed( $product_data['free_plugin_path'] ),
-										'pro_version_installed'   => $this->get_wpfactory_cross_selling()->is_plugin_installed( $product_data['pro_plugin_path'] ),
-										'free_plugin_install_url' => $this->get_wpfactory_cross_selling()->generate_free_plugin_install_url( $product_data['free_plugin_slug'] ),
-										'pro_plugin_url'          => $product_data['pro_plugin_url']
-									) ); ?>
-								</div>
+								<?php if ( ! in_array( plugin_basename( $setup_args['plugin_file_path'] ), array( $product_data['free_plugin_path'], $product_data['pro_plugin_path'], ) ) ) { ?>
+									<div class="wpfcs-tab-content-item">
+										<?php echo $this->get_wpfactory_cross_selling()->get_template( 'recommendation-box-item.php', array(
+											'product_data'            => $product_data,
+											'free_version_installed'  => $this->get_wpfactory_cross_selling()->is_plugin_installed( $product_data['free_plugin_path'] ),
+											'pro_version_installed'   => $this->get_wpfactory_cross_selling()->is_plugin_installed( $product_data['pro_plugin_path'] ),
+											'free_plugin_install_url' => $this->get_wpfactory_cross_selling()->generate_free_plugin_install_url( $product_data['free_plugin_slug'] ),
+											'pro_plugin_url'          => $product_data['pro_plugin_url']
+										) );
+										?>
+									</div>
+								<?php } ?>
 							<?php endforeach; ?>
 						</div>
 					<?php endforeach; ?>
 				</div>
 				<div class="wpfcs-banners">
-					<div class="wpfcs-banner">
-						<?php $banner_img_src = plugins_url( 'assets/img/banner-1.png', $this->get_wpfactory_cross_selling()->get_setup_args()['library_root_path'] ) ?>
-						<a href=""><img src="<?php echo esc_attr( $banner_img_src ); ?>"/></a>
-					</div>
-					<div class="wpfcs-banner">
-						<?php $banner_img_src = plugins_url( 'assets/img/banner-2.png', $this->get_wpfactory_cross_selling()->get_setup_args()['library_root_path'] ) ?>
-						<a href=""><img src="<?php echo esc_attr( $banner_img_src ); ?>"/></a>
-					</div>
+					<?php foreach ( $banners as $banner ): ?>
+						<div class="wpfcs-banner">
+							<?php $banner_img_src = $banner['img_src'] ?>
+							<a href="<?php echo esc_url( $banner['url'] ); ?>" target="<?php echo esc_attr( $banner['target'] ); ?>"><img src="<?php echo esc_attr( $banner_img_src ); ?>"/></a>
+						</div>
+					<?php endforeach; ?>
 				</div>
 			</div>
 			<?php
@@ -155,7 +165,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Recommendations_Box' ) )
 		 *
 		 * @return void
 		 */
-		function add_recommendation_box_js(){
+		function add_recommendation_box_js() {
 			?>
 			<script>
 				function setActiveTab() {
@@ -187,8 +197,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Recommendations_Box' ) )
 					if ( activeContent ) activeContent.classList.add( 'active' );
 				}
 
-				window.addEventListener('load', setActiveTab);
-				window.addEventListener('hashchange', setActiveTab);
+				window.addEventListener( 'load', setActiveTab );
+				window.addEventListener( 'hashchange', setActiveTab );
 			</script>
 			<?php
 		}
@@ -212,8 +222,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Recommendations_Box' ) )
 				isset( $_GET['page'] ) &&
 				'wc-settings' === $_GET['page'] &&
 				isset( $_GET['tab'] ) &&
-				! empty( $setup_args['wc_settings_tab_id'] ) &&
-				$setup_args['wc_settings_tab_id'] === $_GET['tab']
+				! empty( $setup_args['recommendations_box']['wc_settings_tab_id'] ) &&
+				$setup_args['recommendations_box']['wc_settings_tab_id'] === $_GET['tab']
 			) {
 				$enqueue = true;
 			}

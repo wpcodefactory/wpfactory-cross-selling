@@ -8,6 +8,10 @@
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities
 
+## [1.0.4] - 2025-08-18
+### Added
+* Recommendations Box.
+
 ## [1.0.3] - 2024-10-31
 ### Changed
 * Some plugin names.

@@ -21,14 +21,16 @@
 .wpfcs-recommendations-box {
 	padding: 0;
 	display: inline-block;
+	margin:10px 0 0 0;
 
 	@media (min-width: 1100px) {
 		max-width: 41%;
-		margin: 0;
+		//margin: 0;
 	}
 	@media (min-width: 1300px) {
 		max-width: 30%;
-		margin: 0;
+		//max-width:666px;
+		//margin: 0;
 	}
 
 	.wpfcs-tab-content {
@@ -67,6 +69,9 @@
 			padding: 6px;
 			background: #000;
 			border: none;
+			&:hover{
+				background:#204677;
+			}
 		}
 
 		.wpfcs-button i {
@@ -144,7 +149,7 @@
 		gap:0 30px;
 
 		@media (min-width: 1300px) {
-			justify-content: space-between;
+			justify-content: space-evenly;
 		}
 		.wpfcs-banner{
 			img{

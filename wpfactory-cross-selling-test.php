@@ -2,13 +2,12 @@
 /*
 Plugin Name: WPFactory Cross Selling
 Description: WPFactory Cross Selling.
-Version: 1.0.3
+Version: 1.0.4
 Author: WPFactory
 Author URI: https://wpfactory.com
 Text Domain: 'wpfactory-cross-selling'
 Domain Path: /langs
 Copyright: © 2025 WPFactory
-WC tested up to: 9.9
 License: GNU General Public License v3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
@@ -29,13 +28,12 @@ add_action( 'plugins_loaded', function () {
 	$cross_selling = new \WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling();
 	$cross_selling->setup( array(
 		'plugin_file_path'     => $fake_plugin_file_path,
-		'wc_settings_tab_id'   => 'products',
 		'recommendations_box'  => array(
-			//'enable'=>false
+			'enable'             => true,
+			'wc_settings_tab_id' => 'products',
 		),
 		'recommendations_page' => array(
-			'action_link' => array(
-				//'enable' => true,
+			'action_link' => array(//'enable' => true,
 			)
 		)
 	) );

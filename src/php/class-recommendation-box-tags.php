@@ -2,7 +2,7 @@
 /**
  * WPFactory Cross-Selling - Recommendation Box tags.
  *
- * @version 1.0.0
+ * @version 1.0.4
  * @since   1.0.0
  * @author  WPFactory
  */
@@ -26,7 +26,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Recommendation_Box_Tags'
 		/**
 		 * Tags.
 		 *
-		 * @since   1.0.0
+		 * @since   1.0.4
 		 *
 		 * @var array
 		 */
@@ -35,33 +35,29 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Recommendation_Box_Tags'
 		/**
 		 * get_product_categories.
 		 *
-		 * @version 1.0.0
-		 * @since   1.0.0
+		 * @version 1.0.4
+		 * @since   1.0.4
 		 *
 		 * @return array|array[]
 		 */
 		function get_tags() {
 			$this->tags = array(
 				array(
-					'name' => 'Top picks',
+					'name' => __( 'Top picks', 'wpfactory-cross-selling' ),
 					'slug' => 'top-picks',
 				),
 				array(
-					'name' => 'Must-have',
-					'slug' => 'must-have',
+					'name' => __( 'Admin tools', 'wpfactory-cross-selling' ),
+					'slug' => 'admin-tools',
 				),
 				array(
-					'name' => 'Conversion Boosters',
-					'slug' => 'conversion-boosters',
-				),
-				array(
-					'name' => 'Marketing',
+					'name' => __( 'Marketing', 'wpfactory-cross-selling' ),
 					'slug' => 'marketing',
 				),
 				array(
-					'name' => 'Utilities',
-					'slug' => 'utilities',
-				),
+					'name' => __( 'WP Utilities', 'wpfactory-cross-selling' ),
+					'slug' => 'wp-utilities',
+				)
 			);
 
 			return $this->tags;

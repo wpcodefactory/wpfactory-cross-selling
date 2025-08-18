@@ -53,6 +53,15 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 		public $products;
 
 		/**
+		 * Banners.
+		 *
+		 * @since   1.0.4
+		 *
+		 * @var Banners
+		 */
+		public $banners;
+
+		/**
 		 * Product categories.
 		 *
 		 * @since   1.0.0
@@ -85,7 +94,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 
 			$args = wp_parse_args( $args, array(
 				'plugin_file_path'     => '',
-				'wc_settings_tab_id'   => '',
 				'recommendations_page' => array(),
 				'recommendations_box'  => array(),
 			) );
@@ -134,6 +142,10 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 
 			// Products.
 			$this->products = new Products();
+
+			// Banners.
+			$this->banners = new Banners();
+			$this->banners->set_wpfactory_cross_selling( $this );
 
 			// Product Categories.
 			$this->product_categories = new Product_Categories();

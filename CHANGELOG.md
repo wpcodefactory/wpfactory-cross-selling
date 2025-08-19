@@ -8,6 +8,10 @@
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities
 
+## [1.0.6] - 2025-08-19
+### Changed
+* Settings and Recommendations box width.
+
 ## [1.0.5] - 2025-08-18
 ### Fixed
 * Errors related to missing parameters.

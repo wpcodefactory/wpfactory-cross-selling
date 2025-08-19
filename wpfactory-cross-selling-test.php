@@ -2,7 +2,7 @@
 /*
 Plugin Name: WPFactory Cross Selling
 Description: WPFactory Cross Selling.
-Version: 1.0.5
+Version: 1.0.6
 Author: WPFactory
 Author URI: https://wpfactory.com
 Text Domain: 'wpfactory-cross-selling'

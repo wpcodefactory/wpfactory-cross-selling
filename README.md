@@ -126,6 +126,7 @@ Setups the library.
 * **`recommendations_box`** (array)
   * **`enable`** (boolean) - Enables/Disables the Recommendation box. Default value: `true`.
   * **`wc_settings_tab_id`** (string) - WooCommerce settings tab id.
+  * **`position`** (array) - The position to place the Recommendation Box. Default value: `array( 'wc_settings_tab' )`. Possible values: `wc_settings_tab` 
 
 ### `init()`
 
@@ -140,6 +141,7 @@ $cross_selling->setup(array(
     'recommendations_box'  => array(
         'enable'             => true,
         'wc_settings_tab_id' => 'alg_wc_cost_of_goods',
+        'position'           => array( 'wc_settings_tab' ),
     ),
     'recommendations_page' => array(
         'action_link' => array(

@@ -115,9 +115,17 @@ Setups the library.
 **Parameters:**
 
 * **`plugin_file_path`** (string) - Plugin file path.
-* **`plugin_action_link`** (array)
-  * **`enabled`** (boolean) - Enables/Disabled the plugin action link. Default value: `true`.
-  * **`label`** (string) - Label for the plugin action link. Default value: `'Recommendations'`.
+
+
+* **`recommendations_page`** (array)
+  * **`action_link`** (array)
+    * **`enable`** (boolean) - Enables/Disables the plugin action link. Default value: `true`.
+    * **`label`** (string) - Label for the plugin action link. Default value: `'Recommendations'`.
+
+
+* **`recommendations_box`** (array)
+  * **`enable`** (boolean) - Enables/Disables the Recommendation box. Default value: `true`.
+  * **`wc_settings_tab_id`** (string) - WooCommerce settings tab id.
 
 ### `init()`
 
@@ -127,12 +135,18 @@ Initializes the library.
 
 ```php
 $cross_selling = new \WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling();
-$cross_selling->setup( array(
-    'plugin_file_path'   => $this->get_filesystem_path(),
-    'plugin_action_link' => array(
-        'enabled' => true,
-        'label'   => 'More plugins'
+$cross_selling->setup(array(
+    'plugin_file_path'     => $this->get_filesystem_path(),
+    'recommendations_box'  => array(
+        'enable'             => true,
+        'wc_settings_tab_id' => 'alg_wc_cost_of_goods',
     ),
-) );
+    'recommendations_page' => array(
+        'action_link' => array(
+            'enable'  => true,
+            'label'   => 'Suggestions',
+        ),
+    ),
+));
 $cross_selling->init();
 ```

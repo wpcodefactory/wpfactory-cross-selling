@@ -2,7 +2,7 @@
 /**
  * WPFactory Cross-Selling
  *
- * @version 1.0.5
+ * @version 1.0.7
  * @since   1.0.0
  * @author  WPFactory
  */
@@ -32,7 +32,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 		 *
 		 * @var string
 		 */
-		protected $version = '1.0.6';
+		protected $version = '1.0.7-dev';
 
 		/**
 		 * Setup args.
@@ -82,7 +82,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 		/**
 		 * Setups the class.
 		 *
-		 * @version 1.0.5
+		 * @version 1.0.7
 		 * @since   1.0.0
 		 *
 		 * @param $args
@@ -96,6 +96,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 				'plugin_file_path'     => '',
 				'recommendations_page' => array(),
 				'recommendations_box'  => array(),
+				'dashboard_banner'     => array()
 			) );
 
 			// Recommendations page.
@@ -118,6 +119,15 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 				'enable'             => true,
 				'position'           => array( 'wc_settings_tab' ),
 				'wc_settings_tab_id' => '',
+			) );
+
+			// Dashboard banner.
+			$args['dashboard_banner'] = wp_parse_args( $args['dashboard_banner'], array(
+				'enable'             => true,
+				'method'             => 'advanced_ads',
+				'advanced_ads_setup' => array(
+					'group_name' => 'CS - Dashboard'
+				)
 			) );
 
 			// Library file path.
@@ -160,6 +170,11 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 			$recommendations_box = new Recommendations_Box();
 			$recommendations_box->set_wpfactory_cross_selling( $this );
 			$recommendations_box->init();
+
+			// Dashboard banner.
+			$dashboard_banner = new Dashboard_Banner();
+			$dashboard_banner->set_wpfactory_cross_selling( $this );
+			$dashboard_banner->init();
 
 			// Enqueues admin syles.
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );

@@ -8,6 +8,10 @@
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities
 
+## [1.0.7] - 2025-12-11
+### Added
+* Dashboard banner integrating with Advanced Ads plugin.
+
 ## [1.0.6] - 2025-08-19
 ### Changed
 * Settings and Recommendations box width.

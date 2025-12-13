@@ -33,6 +33,24 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Dashboard_Banner' ) ) {
 		use WPFactory_Cross_Selling_Injector;
 
 		/**
+		 * $banner_content_transient_name.
+		 *
+		 * @since 1.0.7
+		 *
+		 * @var string
+		 */
+		protected $banner_content_transient_name = 'wpfcs_dashboard_banner_content';
+
+		/**
+		 * Initialized.
+		 *
+		 * @since   1.0.0
+		 *
+		 * @var bool
+		 */
+		protected static $initialized = false;
+
+		/**
 		 * Initializes the class.
 		 *
 		 * @version 1.0.7
@@ -43,13 +61,14 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Dashboard_Banner' ) ) {
 		function init() {
 			$setup_args = $this->get_wpfactory_cross_selling()->get_setup_args();
 
-			if ( ! $setup_args['dashboard_banner']['enable'] ) {
-				remove_action( 'admin_notices', array( $this, 'display_dashboard_banner' ) );
-				return;
+			if (
+				$setup_args['dashboard_banner']['enable'] &&
+				! self::$initialized
+			) {
+				self::$initialized = true;
+				add_action( 'admin_notices', array( $this, 'display_dashboard_banner' ) );
 			}
 
-			remove_action( 'admin_notices', array( $this, 'display_dashboard_banner' ) );
-			add_action( 'admin_notices', array( $this, 'display_dashboard_banner' ) );
 		}
 
 		/**
@@ -87,7 +106,11 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Dashboard_Banner' ) ) {
 		 */
 		function get_banner_content() {
 			$setup_args = $this->get_wpfactory_cross_selling()->get_setup_args();
+
 			if ( 'advanced_ads' === $setup_args['dashboard_banner']['method'] ) {
+				if ( false !== $setup_args['dashboard_banner']['cache_expiration'] && $cached_content = get_transient( $this->banner_content_transient_name ) ) {
+					return $cached_content;
+				}
 				$group = $this->get_advanced_ads_group();
 				if ( ! is_null( $group ) && isset( $group['ads'] ) && ! empty( $ads = $group['ads'] ) && is_array( $ads ) ) {
 					foreach ( $ads as $ad_id ) {
@@ -101,6 +124,10 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Dashboard_Banner' ) ) {
 								}
 							}
 							if ( isset( $data['content'] ) && ! empty( $data['content'] ) ) {
+								if ( false !== $setup_args['dashboard_banner']['cache_expiration'] ) {
+									set_transient( $this->banner_content_transient_name, $data['content'], $setup_args['dashboard_banner']['cache_expiration'] );
+								}
+
 								return $data['content'];
 								break;
 							}
@@ -121,38 +148,62 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Dashboard_Banner' ) ) {
 		 * @return void
 		 */
 		function display_dashboard_banner() {
+			if ( ! $this->can_display_banner() ) {
+				return;
+			}
+
 			$banner = $this->get_banner_content();
+
 			if ( ! is_null( $banner ) ) {
 				$banner = '<div class="wpfcs-dashboard-banner"><div>' . $banner . '</div></div>';
 				echo wp_kses_post( $banner );
-				echo $this->get_style();
+				echo $this->get_banner_style();
 			}
 		}
 
 		/**
-		 * get_style.
+		 * can_display_banner.
+		 *
+		 * @version 1.0.7
+		 * @since   1.0.7
+		 *
+		 * @return false|void
+		 */
+		function can_display_banner() {
+			/*global $pagenow;
+
+			if ( $pagenow == 'post.php' || $pagenow == 'profile.php' ) {
+				return false;
+			}*/
+			return true;
+		}
+
+		/**
+		 * get_banner_style.
 		 *
 		 * @version 1.0.7
 		 * @since   1.0.7
 		 *
 		 * @return false|string
 		 */
-		function get_style(){
+		function get_banner_style() {
 			ob_start();
 			?>
 			<style>
-				.wpfcs-dashboard-banner{
-					width:100%;
+				.wpfcs-dashboard-banner {
+					width: 100%;
 					display: inline-block;
 				}
-				.wpfcs-dashboard-banner > div{
+
+				.wpfcs-dashboard-banner > div {
 					text-align: center;
 					margin: 25px;
 				}
-                .wpfcs-dashboard-banner img {
-                    max-width:100%;
-                    height:auto
-                }
+
+				.wpfcs-dashboard-banner img {
+					max-width: 100%;
+					height: auto
+				}
 			</style>
 			<?php
 			return ob_get_clean();

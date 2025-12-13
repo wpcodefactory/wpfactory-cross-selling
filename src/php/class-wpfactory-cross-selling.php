@@ -123,8 +123,9 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 
 			// Dashboard banner.
 			$args['dashboard_banner'] = wp_parse_args( $args['dashboard_banner'], array(
-				'enable'             => true,
+				'enable'             => false,
 				'method'             => 'advanced_ads',
+				'cache_expiration'   => HOUR_IN_SECONDS, // false to not cache results.
 				'advanced_ads_setup' => array(
 					'group_name' => 'CS - Dashboard'
 				)

@@ -2,7 +2,7 @@
 /**
  * WPFactory Cross-Selling
  *
- * @version 1.0.7
+ * @version 1.0.5
  * @since   1.0.0
  * @author  WPFactory
  */
@@ -32,7 +32,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 		 *
 		 * @var string
 		 */
-		protected $version = '1.0.7-dev';
+		protected $version = '1.0.6';
 
 		/**
 		 * Setup args.
@@ -123,10 +123,11 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\WPFactory_Cross_Selling'
 
 			// Dashboard banner.
 			$args['dashboard_banner'] = wp_parse_args( $args['dashboard_banner'], array(
-				'enable'             => false,
-				'method'             => 'advanced_ads',
-				'cache_expiration'   => HOUR_IN_SECONDS, // false to not cache results.
-				'advanced_ads_setup' => array(
+				'enable'                  => false,
+				'method'                  => 'advanced_ads',
+				'banner_cache_duration'   => HOUR_IN_SECONDS, // `false` to not cache results.
+				'banner_dismiss_duration' => WEEK_IN_SECONDS, // `false` to always display it.
+				'advanced_ads_setup'      => array(
 					'group_name' => 'CS - Dashboard'
 				)
 			) );

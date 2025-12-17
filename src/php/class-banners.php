@@ -169,24 +169,26 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 			$transient_name              = "wpfcs_banners_from_advanced_ads_group_{$advaced_ads_group_sanitized}";
 
 			if ( 'advanced_ads' === $setup_args['banners']['get_banner_method'] ) {
-				if ( false !== $setup_args['banners']['banner_cache_duration'] && $cached_content = get_transient( $transient_name ) ) {
+				if ( false !== $setup_args['banners']['banner_cache_duration'] && false !== ( $cached_content = get_transient( $transient_name ) ) ) {
 					return $cached_content;
 				}
 				$group = $this->get_advanced_ads_group( $advaced_ads_group );
-				if ( ! is_null( $group ) && isset( $group['ads'] ) && ! empty( $ads = $group['ads'] ) && is_array( $ads ) ) {
-					foreach ( $ads as $ad_id ) {
-						$response = wp_remote_get( 'https://wpfactory.com/wp-json/advanced-ads/v1/ads/' . $ad_id );
+				if ( ! is_null( $group ) && isset( $group['ads'] ) ) {
+					if ( ! empty( $ads = $group['ads'] ) && is_array( $ads ) ) {
+						foreach ( $ads as $ad_id ) {
+							$response = wp_remote_get( 'https://wpfactory.com/wp-json/advanced-ads/v1/ads/' . $ad_id );
 
-						if ( ! is_wp_error( $response ) ) {
-							$body = wp_remote_retrieve_body( $response );
-							$data = json_decode( $body, true );
-							if ( isset( $data['expiration_date'] ) && ! empty( $expiration_date = $data['expiration_date'] ) ) {
-								if ( $expiration_date < current_time( 'timestamp' ) ) {
-									continue;
+							if ( ! is_wp_error( $response ) ) {
+								$body = wp_remote_retrieve_body( $response );
+								$data = json_decode( $body, true );
+								if ( isset( $data['expiration_date'] ) && ! empty( $expiration_date = $data['expiration_date'] ) ) {
+									if ( $expiration_date < current_time( 'timestamp' ) ) {
+										continue;
+									}
 								}
-							}
-							if ( isset( $data['content'] ) && ! empty( $data['content'] ) ) {
-								$content[] = $data['content'];
+								if ( isset( $data['content'] ) && ! empty( $data['content'] ) ) {
+									$content[] = $data['content'];
+								}
 							}
 						}
 					}
@@ -235,10 +237,14 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 			if ( false !== check_ajax_referer( 'wpfcs-get-dashboard-banner', 'banner_nonce' ) ) {
 				$setup_args = $this->get_wpfactory_cross_selling()->get_setup_args();
 				$banners    = $this->get_banners_from_advanced_ads_group( $setup_args['banners']['advanced_ads_setup']['dashboard_banner_group_name'] );
-				if ( isset( $_REQUEST['is_recommendations_page'] ) && true === filter_var( $_REQUEST['is_recommendations_page'], FILTER_VALIDATE_BOOLEAN ) ) {
-					$output = $this->render_dashboard_banner( $banners, false );
+				if ( ! is_null( $banners ) ) {
+					if ( isset( $_REQUEST['is_recommendations_page'] ) && true === filter_var( $_REQUEST['is_recommendations_page'], FILTER_VALIDATE_BOOLEAN ) ) {
+						$output = $this->render_dashboard_banner( $banners, false );
+					} else {
+						$output = $this->dashboard_banner_should_remain_closed() ? '' : $this->render_dashboard_banner( $banners );
+					}
 				} else {
-					$output = $this->dashboard_banner_should_remain_closed() ? '' : $this->render_dashboard_banner( $banners );
+					$output = '';
 				}
 				wp_send_json_success( array(
 					'banner_data' => wp_kses_post( $output ),

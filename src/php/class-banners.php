@@ -75,11 +75,33 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 				! self::$initialized
 			) {
 				self::$initialized = true;
+				add_filter( 'wpfcs_enqueue_admin_css', array( $this, 'enqueue_cross_selling_admin_css' ) );
 				add_action( 'admin_notices', array( $this, 'display_dashboard_banner_wrapper' ) );
-				add_action( 'wp_ajax_'.$this->get_dashboard_banner_ajax_action, array( $this, 'get_dashboard_banner_ajax_action' ) );
-				add_action( 'wp_ajax_'.$this->close_dashboard_banner_ajax_action, array( $this, 'close_dashboard_banner_ajax_action' ) );
+				add_action( 'wp_ajax_' . $this->get_dashboard_banner_ajax_action, array( $this, 'get_dashboard_banner_ajax_action' ) );
+				add_action( 'wp_ajax_' . $this->close_dashboard_banner_ajax_action, array( $this, 'close_dashboard_banner_ajax_action' ) );
 			}
 
+		}
+
+		/**
+		 * enqueue_cross_selling_admin_css.
+		 *
+		 * @version 1.0.7
+		 * @since   1.0.7
+		 *
+		 * @param $enqueue
+		 *
+		 * @return true
+		 */
+		function enqueue_cross_selling_admin_css( $enqueue ) {
+			if (
+				$this->can_display_banner_at_current_location() &&
+				! $this->dashboard_banner_should_remain_closed()
+			) {
+				$enqueue = true;
+			}
+
+			return $enqueue;
 		}
 
 		/**
@@ -120,8 +142,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 			$setup_args = $this->get_wpfactory_cross_selling()->get_setup_args();
 			$content    = array();
 
-			$advaced_ads_group_sanitized = sanitize_key($advaced_ads_group);
-			$transient_name = "wpfcs_banners_from_advanced_ads_group_{$advaced_ads_group_sanitized}";
+			$advaced_ads_group_sanitized = sanitize_key( $advaced_ads_group );
+			$transient_name              = "wpfcs_banners_from_advanced_ads_group_{$advaced_ads_group_sanitized}";
 
 			if ( 'advanced_ads' === $setup_args['banners']['get_banner_method'] ) {
 				if ( false !== $setup_args['banners']['banner_cache_duration'] && $cached_content = get_transient( $transient_name ) ) {
@@ -213,7 +235,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 		 * @return string
 		 */
 		function render_dashboard_banner( $banners_arr, $add_close_button = true ) {
-			$banners_html     = '';
+			$banners_html = '';
 			if ( ! empty( $banners_arr ) ) {
 				foreach ( $banners_arr as $banner ) {
 					$close_button = $add_close_button ? '<button type="button" aria-label="' . __( 'Close', 'wpfactory-cross-selling' ) . '" class="wpfcs-dashboard-banner-close-btn"><div class="dashicons-before dashicons-no"></div></button>' : '';
@@ -295,59 +317,9 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 			$right_or_left_style     = $close_btn_right_or_left . ': -12px;';
 			?>
 			<style>
-                .wpfcs-dashboard-banner {
-                    width: 100%;
-                    display: inline-block;
-                    margin: 30px 0 0;
-                    text-align: center;
-                }
-
-                .wpfcs-dashboard-banner:last-child {
-                    margin-bottom:30px;
-                    text-align: center;
-                }
-
-                .wpfcs-dashboard-banner-inner {
-                    display: inline-block;
-                    position: relative;
-                }
-
-                .wpfcs-dashboard-banner img {
-                    max-width: 100%;
-                    height: auto
-                }
-
-                .wpfcs-dashboard-banner-close-btn {
-                    position:absolute;
+				.wpfcs-dashboard-banner-close-btn {
 				<?php echo $right_or_left_style;?>
-                    top:-12px;
-                    background: #2d2d2d;
-                    border-radius:27px;
-                    cursor: pointer;
-                    border:none;
-                }
-
-                .wpfcs-dashboard-banner-close-btn:hover {
-                    background:#2271b1;
-                }
-
-                .wpfcs-dashboard-banner-close-btn .dashicons-before{
-                    display:block;
-                    position:relative;
-                    left:-6px;
-                    top:-1px;
-                }
-
-                .wpfcs-dashboard-banner-close-btn .dashicons-before::before{
-                    font-size:25px;
-                    margin:1px 0 0 0.5px;
-                    color:#f0f0f1;
-                }
-
-                .wpfcs-dashboard-banner-close-btn,.wpfcs-dashboard-banner-close-btn .dashicons-before::before {
-                    width:27px;
-                    height:27px;
-                }
+				}
 			</style>
 			<?php
 			return ob_get_clean();
@@ -361,7 +333,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 		 *
 		 * @return bool
 		 */
-		function is_recommendations_page(){
+		function is_recommendations_page() {
 			return is_admin() && filter_input( INPUT_GET, 'page' ) === 'wpfactory-cross-selling';
 		}
 
@@ -401,9 +373,9 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 					let dataFromPHP = <?php echo wp_json_encode( $php_to_js );?>;
 					dataFromPHP.action = dataFromPHP.close_banner_action;
 					$( document ).on( 'click', dataFromPHP.close_button_selector, function () {
-						$(dataFromPHP.banner_wrapper_selector).fadeOut(300, function () {
-							$(this).remove();
-						});
+						$( dataFromPHP.banner_wrapper_selector ).fadeOut( 300, function () {
+							$( this ).remove();
+						} );
 						$.post( ajaxurl, dataFromPHP );
 					} );
 				} );
@@ -423,6 +395,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 		function get_recommendation_tab_banners() {
 			$setup_args = $this->get_wpfactory_cross_selling()->get_setup_args();
 			$banners    = $this->get_banners_from_advanced_ads_group( $setup_args['banners']['advanced_ads_setup']['recommendations_group_name'] );
+
 			return $banners;
 		}
 
@@ -474,6 +447,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 			}
 
 			$html = $dom->saveHTML();
+
 			return $html;
 		}
 

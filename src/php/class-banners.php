@@ -69,18 +69,41 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 		 */
 		function init() {
 			$setup_args = $this->get_wpfactory_cross_selling()->get_setup_args();
-
 			if (
 				$setup_args['banners']['enable'] &&
 				! self::$initialized
 			) {
 				self::$initialized = true;
+				add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_dynamic_style' ), 11 );
 				add_filter( 'wpfcs_enqueue_admin_css', array( $this, 'enqueue_cross_selling_admin_css' ) );
 				add_action( 'admin_notices', array( $this, 'display_dashboard_banner_wrapper' ) );
 				add_action( 'wp_ajax_' . $this->get_dashboard_banner_ajax_action, array( $this, 'get_dashboard_banner_ajax_action' ) );
 				add_action( 'wp_ajax_' . $this->close_dashboard_banner_ajax_action, array( $this, 'close_dashboard_banner_ajax_action' ) );
 			}
+		}
 
+		/**
+		 * enqueue_dynamic_style.
+		 *
+		 * @version 1.0.7
+		 * @since   1.0.7
+		 *
+		 * @return void
+		 */
+		function enqueue_dynamic_style() {
+			if (
+				$this->can_display_banner_at_current_location() &&
+				! $this->dashboard_banner_should_remain_closed()
+			) {
+				$close_btn_right_or_left = true === is_rtl() ? 'left' : 'right';
+				$right_or_left_style     = $close_btn_right_or_left . ': -12px;';
+				$css                     = "
+				.wpfcs-dashboard-banner-close-btn {
+					{$right_or_left_style};					
+				}
+			";
+				wp_add_inline_style( 'wpfactory-cross-selling', $css );
+			}
 		}
 
 		/**
@@ -197,7 +220,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 
 			$banner = '<div class="wpfcs-dashboard-banner-wrapper"></div>';
 			echo wp_kses_post( $banner );
-			echo $this->get_dashboard_banner_style();
 			echo $this->get_dashboard_banner_js();
 		}
 
@@ -301,28 +323,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 		 */
 		function can_display_banner_at_current_location() {
 			return true;
-		}
-
-		/**
-		 * get_dashboard_banner_style.
-		 *
-		 * @version 1.0.7
-		 * @since   1.0.7
-		 *
-		 * @return false|string
-		 */
-		function get_dashboard_banner_style() {
-			ob_start();
-			$close_btn_right_or_left = true === is_rtl() ? 'left' : 'right';
-			$right_or_left_style     = $close_btn_right_or_left . ': -12px;';
-			?>
-			<style>
-				.wpfcs-dashboard-banner-close-btn {
-				<?php echo $right_or_left_style;?>
-				}
-			</style>
-			<?php
-			return ob_get_clean();
 		}
 
 		/**

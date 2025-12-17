@@ -219,7 +219,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 			) {
 				return;
 			}
-
 			$banner = '<div class="wpfcs-dashboard-banner-wrapper"></div>';
 			echo wp_kses_post( $banner );
 			echo $this->get_dashboard_banner_js();

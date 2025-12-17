@@ -410,6 +410,9 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\Banners' ) ) {
 		 * @return false|string
 		 */
 		function render_recommendation_tab_banners( $banners ) {
+			if ( empty($banners) || ! is_array() ) {
+				return '';
+			}
 			ob_start();
 			?>
 			<?php foreach ( $banners as $banner ): ?>

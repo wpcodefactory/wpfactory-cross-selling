@@ -114,19 +114,29 @@ Setups the library.
 
 **Parameters:**
 
-* **`plugin_file_path`** (string) - Plugin file path.
+* **`plugin_file_path`** *(string)* - Plugin file path.
 
 
-* **`recommendations_page`** (array)
-  * **`action_link`** (array)
-    * **`enable`** (boolean) - Enables/Disables the plugin action link. Default value: `true`.
-    * **`label`** (string) - Label for the plugin action link. Default value: `'Recommendations'`.
+* **`recommendations_page`** *(array)*
+  * **`action_link`** *(array)*
+    * **`enable`** *(boolean)* - Enables/Disables the plugin action link. Default value: `true`.
+    * **`label`** *(string)* - Label for the plugin action link. Default value: `'Recommendations'`.
 
 
-* **`recommendations_box`** (array)
-  * **`enable`** (boolean) - Enables/Disables the Recommendation box. Default value: `true`.
-  * **`wc_settings_tab_id`** (string) - WooCommerce settings tab id.
-  * **`position`** (array) - The position to place the Recommendation Box. Default value: `array( 'wc_settings_tab' )`. Possible values: `wc_settings_tab` 
+* **`recommendations_box`** *(array)*
+  * **`enable`** *(boolean)* - Enables/Disables the Recommendation box. Default value: `true`.
+  * **`wc_settings_tab_id`** *(string)* - WooCommerce settings tab id.
+  * **`position`** *(array)* - The position to place the Recommendation Box. Default value: `array( 'wc_settings_tab' )`. Possible values: `wc_settings_tab` 
+
+
+* **`banners`** *(array)*
+  * **`enable`** *(boolean)* - Enables/Disables the Banners. Default value: `true`.
+  * **`get_banner_method`** *(string)* - Method to get the banners: `advanced_ads`.
+  * **`banner_cache_duration`** *(integer)* - How long the banners should stay cached. Default value: `HOUR_IN_SECONDS`. 
+  * **`banner_dismiss_duration`** *(integer)* - How long the banners should stay dismissed after the close button was pressed. Default value: `WEEK_IN_SECONDS`.
+  * **`advanced_ads_setup`** *(array)* - Advanced Ads Plugin setup.
+    * **`dashboard_banner_group_name`** *(string)* - Advanced Ads group name for the dashboard banner.  Default value `'CS - Dashboard'`.
+    * **`recommendations_group_name`** *(string)* - Advanced Ads group name for the recommendation banners.  Default value `'CS - Recommendations'`.
 
 ### `init()`
 

@@ -8,6 +8,10 @@
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities
 
+## [1.0.9] - 2025-12-22
+### Fixed
+* Minified CSS.
+
 ## [1.0.8] - 2025-12-18
 ### Fixed
 * Dashboard banner position by adding it inside a wrap class.

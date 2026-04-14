@@ -2,12 +2,11 @@
 /*
 Plugin Name: WPFactory Cross Selling
 Description: WPFactory Cross Selling.
-Version: 1.0.6
+Version: 1.1.0
 Author: WPFactory
 Author URI: https://wpfactory.com
 Text Domain: 'wpfactory-cross-selling'
 Domain Path: /langs
-Copyright: © 2025 WPFactory
 License: GNU General Public License v3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */

@@ -6,6 +6,9 @@
     "prod": "webpack --mode production",
     "dev": "webpack --mode development --watch"
   },
+  "overrides": {
+    "@babel/plugin-transform-modules-systemjs": ">=7.29.4"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

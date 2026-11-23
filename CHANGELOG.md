@@ -8,6 +8,10 @@
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities
 
+## [1.1.8] - 2026-11-23
+### Fixed
+* Dependabot alerts.
+
 ## [1.1.7] - 2026-10-06
 ### Fixed
 * Dependabot alerts.

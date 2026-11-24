@@ -21,7 +21,7 @@
 	var current = tabs.length ? tabs[ 0 ].getAttribute( 'data-job' ) : '';
 
 	function inTab( row, job ) {
-		return 'new' === job ? '1' === row.getAttribute( 'data-new' ) : job === row.getAttribute( 'data-job' );
+		return 'new' === job ? '' !== ( row.getAttribute( 'data-highlight' ) || '' ) : job === row.getAttribute( 'data-job' );
 	}
 
 	function applyFilter() {

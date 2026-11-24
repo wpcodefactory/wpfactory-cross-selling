@@ -46,7 +46,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 		 *
 		 * @since 1.2.0
 		 */
-		const CACHE_SCHEMA = 1;
+		const CACHE_SCHEMA = 2;
 
 		/**
 		 * Number of picks.
@@ -56,11 +56,11 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 		const MAX_PICKS = 3;
 
 		/**
-		 * Max cards with the "New from WPFactory" reason.
+		 * Max cards whose reason comes from a highlight ("New from WPFactory", "Rebuilt with a new interface").
 		 *
 		 * @since 1.2.0
 		 */
-		const MAX_NEW = 1;
+		const MAX_HIGHLIGHTS = 1;
 
 		/**
 		 * Options whose change clears the cache.
@@ -120,8 +120,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 		 *
 		 * One rule per catalog id. "when" gets ( $signals, Site_State $state ).
 		 * "reason" gets ( $signals ) and returns the text for the card's reason strip.
-		 * "new_reason" rules have no reason of their own: they say "New from WPFactory" while the
-		 * plugin is new (Catalog::is_new()), and the generic reason after that.
+		 * "highlight_reason" rules use the highlight's reason while the plugin is highlighted
+		 * (see get_highlight_reason()), then their own reason, or the generic one if they have none.
 		 * A rule only fires when its plugin is not installed (checked in evaluate()).
 		 *
 		 * @version 1.2.0
@@ -252,23 +252,26 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 					},
 				),
 				'helpdesk'           => array(
-					'weight'     => 40,
-					'new_reason' => true,
-					'when'   => function ( $s, $state ) use ( $competitors ) {
+					'weight'           => 40,
+					'highlight_reason' => true,
+					'when'             => function ( $s, $state ) use ( $competitors ) {
 						return $s['woo'] && ! $state->any_folder_active( $competitors['helpdesks'] );
+					},
+					'reason'           => function () {
+						return __( 'Handle support inside WooCommerce', 'wpfactory-cross-selling' );
 					},
 				),
 				'ai-image'           => array(
-					'weight'     => 40,
-					'new_reason' => true,
-					'when'   => function ( $s ) {
+					'weight'           => 40,
+					'highlight_reason' => true,
+					'when'             => function ( $s ) {
 						return $s['woo'] && $s['products'] >= 20;
 					},
 				),
 				'ai-assistant'       => array(
-					'weight'     => 35,
-					'new_reason' => true,
-					'when'   => function () {
+					'weight'           => 35,
+					'highlight_reason' => true,
+					'when'             => function () {
 						return true;
 					},
 				),
@@ -321,7 +324,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 		 * @param array      $signals Signals::collect() result.
 		 * @param Site_State $state   Site state.
 		 *
-		 * @return array[] { id, weight, new, source }
+		 * @return array[] { id, weight, highlight, job, source, order }
 		 */
 		static function evaluate( array $signals, $state ) {
 			$signals    = array_merge( Signals::defaults(), $signals );
@@ -337,12 +340,12 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 					continue;
 				}
 				$candidates[] = array(
-					'id'     => $id,
-					'weight' => $rule['weight'],
-					'new'    => ( ! empty( $rule['new_reason'] ) && $item['new'] ),
-					'job'    => $item['job'],
-					'source' => 'rule',
-					'order'  => $order,
+					'id'        => $id,
+					'weight'    => $rule['weight'],
+					'highlight' => ( ! empty( $rule['highlight_reason'] ) && '' !== $item['highlighted'] ),
+					'job'       => $item['job'],
+					'source'    => 'rule',
+					'order'     => $order,
 				);
 			}
 			usort( $candidates, function ( $a, $b ) {
@@ -354,7 +357,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 		/**
 		 * pick.
 		 *
-		 * Top 3 by weight, at most 1 "New from WPFactory" card, and no 2 cards for the
+		 * Top 3 by weight, at most 1 card with a highlight reason, and no 2 cards for the
 		 * same job tab while another option is left. Then the fallback list fills the gaps.
 		 *
 		 * @version 1.2.0
@@ -363,7 +366,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 		 * @param array      $signals Signals.
 		 * @param Site_State $state   Site state.
 		 *
-		 * @return array[] { id, weight, new, job, source }
+		 * @return array[] { id, weight, highlight, job, source }
 		 */
 		static function pick( array $signals, $state ) {
 			$signals = array_merge( Signals::defaults(), $signals );
@@ -377,11 +380,11 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 						continue;
 					}
 					$fallback[] = array(
-						'id'     => $id,
-						'weight' => 0,
-						'new'    => ! empty( $item['new'] ),
-						'job'    => $item['job'],
-						'source' => 'fallback',
+						'id'        => $id,
+						'weight'    => 0,
+						'highlight' => ( '' !== $item['highlighted'] ),
+						'job'       => $item['job'],
+						'source'    => 'fallback',
 					);
 				}
 				$picks = self::select( $fallback, $picks );
@@ -397,7 +400,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 		 * select.
 		 *
 		 * Pass 1 takes candidates whose job is not used yet. Pass 2 allows a repeated job.
-		 * Both passes keep the "New" limit.
+		 * Both passes keep the highlight limit.
 		 *
 		 * @version 1.2.0
 		 * @since   1.2.0
@@ -415,11 +418,11 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 					}
 					$ids  = wp_list_pluck( $picks, 'id' );
 					$jobs = wp_list_pluck( $picks, 'job' );
-					$news = count( array_filter( wp_list_pluck( $picks, 'new' ) ) );
+					$highs = count( array_filter( wp_list_pluck( $picks, 'highlight' ) ) );
 					if ( in_array( $candidate['id'], $ids, true ) ) {
 						continue;
 					}
-					if ( $candidate['new'] && $news >= self::MAX_NEW ) {
+					if ( $candidate['highlight'] && $highs >= self::MAX_HIGHLIGHTS ) {
 						continue;
 					}
 					if ( $unique_jobs && in_array( $candidate['job'], $jobs, true ) ) {
@@ -453,7 +456,28 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 		}
 
 		/**
+		 * get_highlight_reason.
+		 *
+		 * @version 1.2.0
+		 * @since   1.2.0
+		 *
+		 * @param string $type Highlight type.
+		 *
+		 * @return string
+		 */
+		static function get_highlight_reason( $type ) {
+			return ( 'improved' === $type ?
+				__( 'Rebuilt with a new interface', 'wpfactory-cross-selling' ) :
+				__( 'New from WPFactory', 'wpfactory-cross-selling' )
+			);
+		}
+
+		/**
 		 * get_reason.
+		 *
+		 * Rule picks: the highlight reason for "highlight_reason" rules while the plugin is highlighted,
+		 * else the rule's own reason. Fallback picks and rules without a reason: the highlight reason
+		 * while highlighted, else the generic one.
 		 *
 		 * @version 1.2.0
 		 * @since   1.2.0
@@ -464,16 +488,21 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 		 * @return string
 		 */
 		static function get_reason( array $pick, array $signals ) {
-			$signals = array_merge( Signals::defaults(), $signals );
+			$signals     = array_merge( Signals::defaults(), $signals );
+			$item        = Catalog::get_item( $pick['id'] );
+			$highlighted = ( $item ? $item['highlighted'] : '' );
 			if ( 'rule' === $pick['source'] ) {
 				$rules = self::get_rules();
-				if ( isset( $rules[ $pick['id'] ]['reason'] ) ) {
-					return call_user_func( $rules[ $pick['id'] ]['reason'], $signals );
+				$rule  = ( isset( $rules[ $pick['id'] ] ) ? $rules[ $pick['id'] ] : array() );
+				if ( ! empty( $rule['highlight_reason'] ) && '' !== $highlighted ) {
+					return self::get_highlight_reason( $highlighted );
+				}
+				if ( isset( $rule['reason'] ) ) {
+					return call_user_func( $rule['reason'], $signals );
 				}
 			}
-			$item = Catalog::get_item( $pick['id'] );
-			if ( $item && $item['new'] ) {
-				return __( 'New from WPFactory', 'wpfactory-cross-selling' );
+			if ( '' !== $highlighted ) {
+				return self::get_highlight_reason( $highlighted );
 			}
 			return ( $signals['woo'] ?
 				__( 'Works with any WooCommerce store', 'wpfactory-cross-selling' ) :

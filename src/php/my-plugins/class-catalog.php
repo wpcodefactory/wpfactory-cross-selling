@@ -40,14 +40,21 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 		const CATALOG_VERSION = 1;
 
 		/**
-		 * How long a plugin counts as new after its release date (strtotime offset).
+		 * How long a highlight lasts after its date (strtotime offset).
 		 *
 		 * @since 1.2.0
 		 */
-		const NEW_WINDOW = '-6 months';
+		const HIGHLIGHT_WINDOW = '-6 months';
 
 		/**
-		 * Time used for "new" (tests can set it).
+		 * Highlight types.
+		 *
+		 * @since 1.2.0
+		 */
+		const HIGHLIGHT_TYPES = array( 'new', 'improved' );
+
+		/**
+		 * Time used for highlights (tests can set it).
 		 *
 		 * @since 1.2.0
 		 *
@@ -62,7 +69,10 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 		 * - job:         tab id from get_jobs() (any tab but "new", which is computed).
 		 * - release:     first release date, Y-m-d: wp.org "added" date, or the wpfactory.com /
 		 *                woobewoo.com product page date for plugins without a listing. Empty if unreleased.
-		 * - new:         computed, not set here: released within NEW_WINDOW. Shown in the New tab.
+		 * - highlight:   array( 'type' => 'new'|'improved', 'date' => 'Y-m-d' ). Left out, it is
+		 *                array( 'type' => 'new', 'date' => release ). An empty date means no highlight.
+		 * - highlighted: computed, not set here: the highlight type while it is within HIGHLIGHT_WINDOW
+		 *                of its date, else ''. Shown in the "New & improved" tab with a "New" or "Improved" chip.
 		 * - store:       needs WooCommerce (hidden when WooCommerce is not active).
 		 * - vendor:      "wpfactory" or "wbw".
 		 * - wporg:       wp.org slug, so the free version can be installed. Empty for Pro-only.
@@ -82,6 +92,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 			'desc'      => '',
 			'job'       => '',
 			'release'   => '',
+			'highlight' => null,
 			'store'     => true,
 			'vendor'    => 'wpfactory',
 			'wporg'     => '',
@@ -114,7 +125,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 		 */
 		static function get_jobs() {
 			return array(
-				'new'     => __( 'New', 'wpfactory-cross-selling' ),
+				'new'     => __( 'New & improved', 'wpfactory-cross-selling' ),
 				'sell'    => __( 'Sell more per order', 'wpfactory-cross-selling' ),
 				'rules'   => __( 'Set order rules', 'wpfactory-cross-selling' ),
 				'numbers' => __( 'Know your numbers', 'wpfactory-cross-selling' ),
@@ -152,20 +163,56 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 		}
 
 		/**
-		 * is_new.
+		 * is_recent.
 		 *
 		 * @version 1.2.0
 		 * @since   1.2.0
 		 *
-		 * @param string $release Release date, Y-m-d.
+		 * @param string $date Date, Y-m-d.
 		 *
-		 * @return bool
+		 * @return bool True from the date until HIGHLIGHT_WINDOW after it.
 		 */
-		static function is_new( $release ) {
-			if ( '' === $release || false === ( $time = strtotime( $release . ' 00:00:00 UTC' ) ) ) {
+		static function is_recent( $date ) {
+			if ( ! is_string( $date ) || '' === $date || false === ( $time = strtotime( $date . ' 00:00:00 UTC' ) ) ) {
 				return false;
 			}
-			return ( $time >= strtotime( self::NEW_WINDOW, self::now() ) && $time <= self::now() );
+			return ( $time >= strtotime( self::HIGHLIGHT_WINDOW, self::now() ) && $time <= self::now() );
+		}
+
+		/**
+		 * get_highlight.
+		 *
+		 * @version 1.2.0
+		 * @since   1.2.0
+		 *
+		 * @param array $item Catalog item (raw values merged with the defaults).
+		 *
+		 * @return array { type, date }
+		 */
+		static function get_highlight( $item ) {
+			$highlight = ( is_array( $item['highlight'] ) ?
+				array_merge( array( 'type' => 'new', 'date' => '' ), $item['highlight'] ) :
+				array( 'type' => 'new', 'date' => $item['release'] )
+			);
+			if ( ! in_array( $highlight['type'], self::HIGHLIGHT_TYPES, true ) ) {
+				$highlight['date'] = '';
+			}
+			return $highlight;
+		}
+
+		/**
+		 * get_highlighted.
+		 *
+		 * @version 1.2.0
+		 * @since   1.2.0
+		 *
+		 * @param array $item Catalog item (raw values merged with the defaults).
+		 *
+		 * @return string "new", "improved", or "" when not highlighted now.
+		 */
+		static function get_highlighted( $item ) {
+			$highlight = self::get_highlight( $item );
+			return ( self::is_recent( $highlight['date'] ) ? $highlight['type'] : '' );
 		}
 
 		/**
@@ -180,9 +227,10 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 			if ( null === self::$items ) {
 				$items = array();
 				foreach ( self::get_raw_items() as $id => $item ) {
-					$item         = array_merge( self::$defaults, $item, array( 'id' => $id ) );
-					$item['new']  = self::is_new( $item['release'] );
-					$items[ $id ] = $item;
+					$item                = array_merge( self::$defaults, $item, array( 'id' => $id ) );
+					$item['highlight']   = self::get_highlight( $item );
+					$item['highlighted'] = self::get_highlighted( $item );
+					$items[ $id ]        = $item;
 				}
 				self::$items = $items;
 			}
@@ -275,6 +323,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'desc'      => __( 'Let customers open and track support tickets from My Account.', 'wpfactory-cross-selling' ),
 					'job'       => 'support',
 					'release'   => '2019-10-19',
+					// Revamp: set the date when the new version is released (empty = not highlighted).
+					'highlight' => array( 'type' => 'improved', 'date' => '' ),
 					'wporg'     => 'support-ticket-system-for-woocommerce',
 					'free_file' => 'support-ticket-system-for-woocommerce/support-ticket-system-for-woocommerce.php',
 					'pro_file'  => 'helpdesk-support-ticket-system-for-woocommerce-pro/support-ticket-system-woocommerce-pro.php',

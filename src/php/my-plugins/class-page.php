@@ -89,6 +89,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 				\WPFactory\WPFactory_Admin_Menu\WPFactory_Admin_Menu::get_instance();
 			}
 			add_action( 'admin_menu', array( __CLASS__, 'register_menu' ), 99 );
+			add_action( 'admin_menu', array( __CLASS__, 'pin_last' ), PHP_INT_MAX );
 			add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue' ) );
 		}
 
@@ -163,10 +164,50 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 
 			self::$dot  = self::has_unseen();
 			$title      = __( 'My Plugins', 'wpfactory-cross-selling' );
-			self::$hook = add_submenu_page( $parent, $title, $title . ( self::$dot ? self::dot_html() : '' ), Plugin::capability(), self::SLUG, array( __CLASS__, 'render' ), 2 );
+			self::$hook = add_submenu_page( $parent, $title, $title . ( self::$dot ? self::dot_html() : '' ), Plugin::capability(), self::SLUG, array( __CLASS__, 'render' ) );
 			if ( self::$hook ) {
 				add_action( 'load-' . self::$hook, array( __CLASS__, 'on_load' ) );
 			}
+		}
+
+		/**
+		 * pin_last.
+		 *
+		 * Moves My Plugins to the end of the WPFactory submenu after every plugin has added its items,
+		 * so it stays last in the sidebar and in the top bar (built from the same submenu).
+		 *
+		 * @version 1.2.0
+		 * @since   1.2.0
+		 */
+		static function pin_last() {
+			global $submenu;
+			$parent = self::parent_slug();
+			if ( empty( $submenu[ $parent ] ) || ! is_array( $submenu[ $parent ] ) ) {
+				return;
+			}
+			$submenu[ $parent ] = self::move_last( $submenu[ $parent ], self::SLUG ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- reorders, nothing is removed.
+		}
+
+		/**
+		 * move_last.
+		 *
+		 * @version 1.2.0
+		 * @since   1.2.0
+		 *
+		 * @param array  $entries Submenu entries ( title, capability, slug, ... ).
+		 * @param string $slug    Slug to move.
+		 *
+		 * @return array
+		 */
+		static function move_last( array $entries, $slug ) {
+			foreach ( $entries as $key => $entry ) {
+				if ( isset( $entry[2] ) && $slug === $entry[2] ) {
+					unset( $entries[ $key ] );
+					$entries[] = $entry;
+					break;
+				}
+			}
+			return $entries;
 		}
 
 		/**
@@ -225,14 +266,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 			$woo    = class_exists( 'WooCommerce' );
 			$items  = Catalog::get_items();
 			$picks  = Rules_Engine::get_picks( $state );
-			$owned  = array();
-			$active = 0;
-			foreach ( $items as $id => $item ) {
-				if ( $state->is_installed( $item ) ) {
-					$owned[ $id ] = $item;
-					$active      += ( $state->is_active( $item ) ? 1 : 0 );
-				}
-			}
+			$owned  = self::sort_owned( $items, $state );
 			$picked_ids = wp_list_pluck( $picks, 'id' );
 			?>
 			<div class="wpf-myplugins">
@@ -242,7 +276,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 					<section class="wpf-mp-section" aria-labelledby="wpf-mp-title">
 						<div>
 							<h1 id="wpf-mp-title" class="wpf-mp-h1"><?php esc_html_e( 'My Plugins', 'wpfactory-cross-selling' ); ?></h1>
-							<p class="wpf-mp-lead"><?php echo esc_html( self::get_subline( $active ) ); ?></p>
+							<p class="wpf-mp-lead"><?php echo esc_html( self::get_subline( count( $owned ) ) ); ?></p>
 						</div>
 						<?php self::render_owned( $owned, $state ); ?>
 					</section>
@@ -256,22 +290,69 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		}
 
 		/**
+		 * is_owned_active.
+		 *
+		 * Pro decides when it is installed (a free copy left active next to an inactive Pro counts as inactive).
+		 *
+		 * @version 1.2.0
+		 * @since   1.2.0
+		 *
+		 * @param array      $item  Catalog item.
+		 * @param Site_State $state Site state.
+		 *
+		 * @return bool
+		 */
+		static function is_owned_active( $item, $state ) {
+			$found = $state->find( $item );
+			return ( '' !== $found['pro'] ? $found['pro_active'] : $found['free_active'] );
+		}
+
+		/**
+		 * sort_owned.
+		 *
+		 * Installed catalog items, active first and inactive last, catalog order inside each group.
+		 *
+		 * @version 1.2.0
+		 * @since   1.2.0
+		 *
+		 * @param array      $items Catalog items.
+		 * @param Site_State $state Site state.
+		 *
+		 * @return array
+		 */
+		static function sort_owned( array $items, $state ) {
+			$active   = array();
+			$inactive = array();
+			foreach ( $items as $id => $item ) {
+				if ( ! $state->is_installed( $item ) ) {
+					continue;
+				}
+				if ( self::is_owned_active( $item, $state ) ) {
+					$active[ $id ] = $item;
+				} else {
+					$inactive[ $id ] = $item;
+				}
+			}
+			return $active + $inactive;
+		}
+
+		/**
 		 * get_subline.
 		 *
 		 * @version 1.2.0
 		 * @since   1.2.0
 		 *
-		 * @param int $active Active WPFactory and WBW plugins.
+		 * @param int $installed Installed WPFactory and WBW plugins, active or not.
 		 *
 		 * @return string
 		 */
-		static function get_subline( $active ) {
-			if ( $active < 1 ) {
+		static function get_subline( $installed ) {
+			if ( $installed < 1 ) {
 				return __( 'Here\'s what fits how you sell.', 'wpfactory-cross-selling' );
 			}
-			/* translators: %s: number of active WPFactory plugins. */
-			$use = sprintf( _n( 'You use %s WPFactory plugin.', 'You use %s WPFactory plugins.', $active, 'wpfactory-cross-selling' ), number_format_i18n( $active ) );
-			return $use . ' ' . __( 'Here\'s what else fits how you sell.', 'wpfactory-cross-selling' );
+			/* translators: %s: number of installed WPFactory plugins. */
+			$have = sprintf( _n( 'You have %s WPFactory plugin.', 'You have %s WPFactory plugins.', $installed, 'wpfactory-cross-selling' ), number_format_i18n( $installed ) );
+			return $have . ' ' . __( 'Here\'s what else fits how you sell.', 'wpfactory-cross-selling' );
 		}
 
 		/**
@@ -329,13 +410,14 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 			<div class="ak-card wpf-mp-owned">
 				<?php foreach ( $owned as $item ) : ?>
 					<?php
-					$found = $state->find( $item );
-					if ( '' !== $found['pro'] ) {
-						$is_active = $found['pro_active'];
-						$chip      = $is_active ? array( 'ok', __( 'Pro', 'wpfactory-cross-selling' ) ) : array( 'neutral', __( 'Inactive', 'wpfactory-cross-selling' ) );
+					$found     = $state->find( $item );
+					$is_active = self::is_owned_active( $item, $state );
+					if ( ! $is_active ) {
+						$chip = array( 'neutral', __( 'Inactive', 'wpfactory-cross-selling' ) );
+					} elseif ( '' !== $found['pro'] ) {
+						$chip = array( 'ok', __( 'Pro', 'wpfactory-cross-selling' ) );
 					} else {
-						$is_active = $found['free_active'];
-						$chip      = $is_active ? array( 'neutral', __( 'Free', 'wpfactory-cross-selling' ) ) : array( 'neutral', __( 'Inactive', 'wpfactory-cross-selling' ) );
+						$chip = array( 'neutral', __( 'Free', 'wpfactory-cross-selling' ) );
 					}
 					$file = ( '' !== $found['pro'] ? $found['pro'] : $found['free'] );
 					?>
@@ -443,7 +525,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 			$tabs = array();
 			foreach ( Catalog::get_jobs() as $job => $label ) {
 				$count = count( array_filter( $shown, function ( $item ) use ( $job ) {
-					return ( 'new' === $job ? $item['new'] : $job === $item['job'] );
+					return ( 'new' === $job ? '' !== $item['highlighted'] : $job === $item['job'] );
 				} ) );
 				if ( $count > 0 ) {
 					$tabs[ $job ] = $label;
@@ -466,11 +548,16 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 				</div>
 				<div class="ak-card wpf-mp-list" id="wpf-mp-catalog-list" role="tabpanel" aria-labelledby="wpf-mp-tab-<?php echo esc_attr( $first ); ?>">
 					<?php foreach ( $shown as $item ) : ?>
-						<div class="wpf-mp-row" data-id="<?php echo esc_attr( $item['id'] ); ?>" data-job="<?php echo esc_attr( $item['job'] ); ?>" data-new="<?php echo $item['new'] ? '1' : '0'; ?>" data-search="<?php echo esc_attr( strtolower( $item['name'] . ' ' . $item['desc'] ) ); ?>">
+						<div class="wpf-mp-row" data-id="<?php echo esc_attr( $item['id'] ); ?>" data-job="<?php echo esc_attr( $item['job'] ); ?>" data-highlight="<?php echo esc_attr( $item['highlighted'] ); ?>" data-search="<?php echo esc_attr( strtolower( $item['name'] . ' ' . $item['desc'] ) ); ?>">
 							<div class="wpf-mp-row-main">
 								<?php self::render_logo( $item ); ?>
 								<div>
 									<b><?php echo esc_html( $item['name'] ); ?></b>
+									<?php if ( 'new' === $item['highlighted'] ) : ?>
+										<span class="ak-chip ak-chip-ok"><?php esc_html_e( 'New', 'wpfactory-cross-selling' ); ?></span>
+									<?php elseif ( 'improved' === $item['highlighted'] ) : ?>
+										<span class="ak-chip ak-chip-ok"><?php esc_html_e( 'Improved', 'wpfactory-cross-selling' ); ?></span>
+									<?php endif; ?>
 									<?php if ( in_array( $item['id'], $picked_ids, true ) ) : ?>
 										<span class="ak-chip ak-chip-info"><?php esc_html_e( 'Picked above', 'wpfactory-cross-selling' ); ?></span>
 									<?php endif; ?>

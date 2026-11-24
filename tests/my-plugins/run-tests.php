@@ -51,18 +51,6 @@ function state( $installed = array(), $active = array() ) { return new Site_Stat
 function woo( $extra = array() ) {
 	return array_merge( array( 'woo' => true, 'countries' => 1, 'gateways' => 1 ), $extra );
 }
-// Sets highlights on the cached catalog (cleared by Catalog::set_now() and Catalog::reset()).
-function set_highlights( array $highlights ) {
-	Catalog::get_items();
-	$prop = new ReflectionProperty( Catalog::class, 'items' );
-	$prop->setAccessible( true );
-	$items = $prop->getValue();
-	foreach ( $highlights as $id => $highlight ) {
-		$items[ $id ]['highlight']   = $highlight;
-		$items[ $id ]['highlighted'] = Catalog::get_highlighted( $items[ $id ] );
-	}
-	$prop->setValue( null, $items );
-}
 function pick_of( $picks, $id ) {
 	$found = array_values( array_filter( $picks, function ( $x ) use ( $id ) { return $id === $x['id']; } ) );
 	return $found ? $found[0] : null;
@@ -70,7 +58,6 @@ function pick_of( $picks, $id ) {
 $generic = 'Works with any WooCommerce store';
 
 // ---------------------------------------------------------------- Catalog data.
-Catalog::set_now( strtotime( '2026-11-24 12:00:00 UTC' ) );
 $items = Catalog::get_items();
 $jobs  = array_keys( Catalog::get_jobs() );
 $seen_files = array();
@@ -82,10 +69,7 @@ foreach ( $items as $id => $item ) {
 	check( "$id: abbr", 2 === strlen( $item['abbr'] ) && ! isset( $seen_abbr[ $item['abbr'] ] ), $item['abbr'] );
 	$seen_abbr[ $item['abbr'] ] = $id;
 	check( "$id: has a file to detect", '' !== $item['free_file'] || '' !== $item['pro_file'] );
-	check( "$id: release date", '' === $item['release'] ? 'ai-assistant' === $id : (bool) preg_match( '/^20\d\d-\d\d-\d\d$/', $item['release'] ), $item['release'] );
-	check( "$id: highlight type", in_array( $item['highlight']['type'], Catalog::HIGHLIGHT_TYPES, true ), $item['highlight']['type'] );
-	check( "$id: highlight date", '' === $item['highlight']['date'] || (bool) preg_match( '/^20\d\d-\d\d-\d\d$/', $item['highlight']['date'] ), $item['highlight']['date'] );
-	check( "$id: highlighted value", in_array( $item['highlighted'], array( '', 'new', 'improved' ), true ), $item['highlighted'] );
+	check( "$id: no release or highlight fields", ! isset( $item['release'] ) && ! isset( $item['highlight'] ) );
 	if ( '' !== $item['wporg'] ) {
 		check( "$id: free_file in wp.org folder", 0 === strpos( $item['free_file'], $item['wporg'] . '/' ), $item['free_file'] );
 		check( "$id: icon from ps.w.org", 0 === strpos( $item['icon_url'], 'https://ps.w.org/' . $item['wporg'] . '/' ), $item['icon_url'] );
@@ -119,26 +103,28 @@ foreach ( array_keys( Rules_Engine::get_rules() ) as $id ) {
 foreach ( array_merge( Rules_Engine::get_fallback( true ), Rules_Engine::get_fallback( false ) ) as $id ) {
 	check( "fallback $id has a catalog item", isset( $items[ $id ] ) );
 }
-$hl_ids = array_keys( array_filter( $items, function ( $i ) { return '' !== $i['highlighted']; } ) );
-check( 'New & improved tab on 2026-11-24 (6 months)', array( 'catalog-health-scanner' ) === $hl_ids, implode( ', ', $hl_ids ) );
-check( 'tab label', 'New & improved' === Catalog::get_jobs()['new'], Catalog::get_jobs()['new'] );
-check( 'tab order', array( 'new', 'sell', 'display', 'rules', 'numbers', 'support', 'tidy', 'manage' ) === $jobs, implode( ',', $jobs ) );
+$top_expected = array( 'product-filter', 'download-plugins', 'ean', 'order-min-max-amount', 'cost-of-goods', 'email-verification', 'eu-vat', 'payment-methods', 'min-max-quantity', 'wishlist' );
+check( 'Top plugins: 9 WPFactory plus the WBW filter', $top_expected === Catalog::TOP, implode( ', ', Catalog::TOP ) );
+check( 'Top plugins: unique ids', count( Catalog::TOP ) === count( array_unique( Catalog::TOP ) ) );
+foreach ( Catalog::TOP as $id ) {
+	check( "Top plugin $id is in the catalog and can be offered", isset( $items[ $id ] ) && Catalog::is_available( $items[ $id ] ) && true === $items[ $id ]['top'] );
+}
+$top_ids = array_keys( array_filter( $items, function ( $i ) { return $i['top']; } ) );
+check( 'top flag only on TOP ids', 10 === count( $top_ids ) && ! array_diff( $top_ids, Catalog::TOP ), implode( ', ', $top_ids ) );
+check( 'Top plugins: 9 by WPFactory, 1 by WBW', 9 === count( array_filter( Catalog::TOP, function ( $id ) use ( $items ) { return 'wpfactory' === $items[ $id ]['vendor']; } ) ) && 'wbw' === $items['product-filter']['vendor'] );
+check( 'tab label', 'Top plugins' === Catalog::get_jobs()['top'], Catalog::get_jobs()['top'] );
+check( 'tab order', array( 'top', 'sell', 'display', 'rules', 'numbers', 'support', 'tidy', 'manage' ) === $jobs, implode( ',', $jobs ) );
+$ordered = array_keys( Page::top_first( $items ) );
+check( 'list order: top plugins first, in TOP order', Catalog::TOP === array_slice( $ordered, 0, 10 ) && count( $items ) === count( $ordered ), implode( ', ', array_slice( $ordered, 0, 12 ) ) );
+$rest = array_values( array_diff( array_keys( $items ), Catalog::TOP ) );
+check( 'list order: the rest keep catalog order', $rest === array_slice( $ordered, 10 ) );
+$some = array_intersect_key( $items, array_flip( array( 'msrp', 'wishlist', 'eu-vat', 'popups', 'product-filter' ) ) );
+check( 'list order with some top plugins missing (installed)', array( 'product-filter', 'eu-vat', 'wishlist', 'popups', 'msrp' ) === array_keys( Page::top_first( $some ) ), implode( ', ', array_keys( Page::top_first( $some ) ) ) );
 $display = array_keys( array_filter( $items, function ( $i ) { return 'display' === $i['job']; } ) );
 sort( $display );
 check( 'Store display tab: 7 plugins', array( 'add-to-cart-labels', 'currency-switcher', 'product-table', 'product-tabs', 'products-per-page', 'related-categories', 'variation-swatches' ) === $display, implode( ', ', $display ) );
 $sell = count( array_filter( $items, function ( $i ) { return 'sell' === $i['job']; } ) );
 check( 'Sell more per order: 13 plugins', 13 === $sell, $sell );
-check( 'Instant Checkout: highlight new on its release date', array( 'type' => 'new', 'date' => '2026-03-09' ) === $items['instant-checkout-chatgpt']['highlight'] );
-check( 'Instant Checkout: not highlighted on 2026-11-24 (its 6 months ended 2026-09-09)', '' === $items['instant-checkout-chatgpt']['highlighted'] );
-check( 'recent: 6 months minus a day', Catalog::is_recent( '2026-05-25' ) );
-check( 'not recent: 6 months plus a day', ! Catalog::is_recent( '2026-05-23' ) );
-check( 'not recent: future date', ! Catalog::is_recent( '2026-12-01' ) );
-check( 'not recent: no date', ! Catalog::is_recent( '' ) );
-check( 'highlight defaults to new on the release date', array( 'type' => 'new', 'date' => '2026-08-03' ) === $items['catalog-health-scanner']['highlight'] && 'new' === $items['catalog-health-scanner']['highlighted'] );
-check( 'Helpdesk: improved, no date, not highlighted', array( 'type' => 'improved', 'date' => '' ) === $items['helpdesk']['highlight'] && '' === $items['helpdesk']['highlighted'] );
-check( 'improved with a recent date', 'improved' === Catalog::get_highlighted( array( 'release' => '2019-10-19', 'highlight' => array( 'type' => 'improved', 'date' => '2026-10-01' ) ) ) );
-check( 'improved ends after 6 months', '' === Catalog::get_highlighted( array( 'release' => '', 'highlight' => array( 'type' => 'improved', 'date' => '2026-05-01' ) ) ) );
-check( 'unknown highlight type is ignored', '' === Catalog::get_highlighted( array( 'release' => '', 'highlight' => array( 'type' => 'hot', 'date' => '2026-11-01' ) ) ) );
 check( 'WBW Pro-only items', Catalog::is_pro_only( $items['currency-switcher'] ) && Catalog::is_pro_only( $items['product-table'] ) );
 check( 'AI Assistant is not offered until it has a listing', ! Catalog::is_available( $items['ai-assistant'] ) );
 check( 'AI Product Image Generator is Pro only', Catalog::is_pro_only( $items['ai-image'] ) );
@@ -180,13 +166,13 @@ check( 'no Woo: utilities', 'slugs-manager, file-renaming, download-plugins' ===
 $base = woo( array( 'eu' => true, 'coupons' => true, 'products' => 10 ) );
 $p    = Rules_Engine::pick( $base, state() );
 check( 'EU + coupons', 'eu-vat, coupons-by-url, helpdesk' === ids( $p ), ids( $p ) );
-check( 'EU reason', 'You sell to EU countries' === Rules_Engine::get_reason( $p[0], $base ) );
+check( 'EU reason', 'Your store is in the EU' === Rules_Engine::get_reason( $p[0], $base ) );
 
 // 3. Toggle EU off: fallback fills the third card.
 $p = Rules_Engine::pick( array_merge( $base, array( 'eu' => false ) ), state() );
 check( 'EU off', 'coupons-by-url, helpdesk, cost-of-goods' === ids( $p ), ids( $p ) );
 check( 'fallback source', 'fallback' === $p[2]['source'] && 'Works with any WooCommerce store' === Rules_Engine::get_reason( $p[2], $base ) );
-check( 'Helpdesk reason while not highlighted', 'Handle support inside WooCommerce' === Rules_Engine::get_reason( $p[1], $base ), Rules_Engine::get_reason( $p[1], $base ) );
+check( 'Helpdesk reason', 'Handle support inside WooCommerce' === Rules_Engine::get_reason( $p[1], $base ), Rules_Engine::get_reason( $p[1], $base ) );
 
 // 4. Cost of Goods active: Price by Quantity, and Cost of Goods is not offered.
 $cog = state( array( 'cost-of-goods-for-woocommerce/cost-of-goods-for-woocommerce.php' ), array( 'cost-of-goods-for-woocommerce/cost-of-goods-for-woocommerce.php' ) );
@@ -221,46 +207,17 @@ $attr = woo( array( 'products' => 10, 'attributes' => 4 ) );
 $p    = Rules_Engine::pick( $attr, state() );
 check( 'attributes reason', 'product-filter' === $p[0]['id'] && 'Your products use 4 attributes' === Rules_Engine::get_reason( $p[0], $attr ), ids( $p ) );
 
-// 8. Highlights: reasons, the explicit Helpdesk highlight, and one highlight card at most.
-Catalog::set_now( strtotime( '2019-11-01 12:00:00 UTC' ) );
-$p = Rules_Engine::pick( woo( array( 'products' => 30 ) ), state() );
-$h = pick_of( $p, 'helpdesk' );
-check( 'Helpdesk highlight (no date) replaces its 2019 release date', $h && ! $h['highlight'] && 'Handle support inside WooCommerce' === Rules_Engine::get_reason( $h, woo() ), ids( $p ) );
-$ai = pick_of( $p, 'ai-image' );
-check( 'AI Image is not highlighted before its release date', ! $ai || ! $ai['highlight'] );
-
-Catalog::set_now( strtotime( '2026-11-24 12:00:00 UTC' ) );
-set_highlights( array( 'helpdesk' => array( 'type' => 'improved', 'date' => '2026-11-20' ) ) );
+// 8. Reasons: rule picks use their own reason, rules without one and fallback picks the generic one.
 $p = Rules_Engine::pick( woo( array( 'coupons' => true ) ), state() );
 $h = pick_of( $p, 'helpdesk' );
-check( 'Helpdesk improved: highlight reason', $h && $h['highlight'] && 'Rebuilt with a new interface' === Rules_Engine::get_reason( $h, woo() ), ids( $p ) );
-set_highlights( array( 'helpdesk' => array( 'type' => 'improved', 'date' => '2026-05-01' ) ) );
-check( 'Helpdesk improved over 6 months ago: rule reason', 'Handle support inside WooCommerce' === Rules_Engine::get_reason( array( 'id' => 'helpdesk', 'source' => 'rule' ), woo() ) );
-
-set_highlights( array( 'helpdesk' => array( 'type' => 'improved', 'date' => '2026-11-20' ), 'ai-image' => array( 'type' => 'new', 'date' => '2026-11-01' ) ) );
-$p = Rules_Engine::pick( woo( array( 'products' => 30 ) ), state() );
-check( 'max one highlight card (Helpdesk and AI Image both highlighted)', 1 === count( array_filter( array_column( $p, 'highlight' ) ) ) && null === pick_of( $p, 'ai-image' ), ids( $p ) );
-$ai_reason = Rules_Engine::get_reason( array( 'id' => 'ai-image', 'source' => 'rule' ), woo() );
-check( 'AI Image new: highlight reason', 'New from WPFactory' === $ai_reason, $ai_reason );
-Catalog::reset();
-check( 'AI Image not highlighted: generic reason', $generic === Rules_Engine::get_reason( array( 'id' => 'ai-image', 'source' => 'rule' ), woo() ) );
-
-set_highlights( array( 'cost-of-goods' => array( 'type' => 'new', 'date' => '2026-11-01' ) ) );
+check( 'Helpdesk: its own reason', $h && 'Handle support inside WooCommerce' === Rules_Engine::get_reason( $h, woo() ), ids( $p ) );
+check( 'AI Image (no reason of its own): generic reason', $generic === Rules_Engine::get_reason( array( 'id' => 'ai-image', 'source' => 'rule' ), woo() ) );
 $p  = Rules_Engine::pick( woo(), state() );
 $cg = pick_of( $p, 'cost-of-goods' );
-check( 'fallback pick that is highlighted uses the highlight reason', $cg && 'fallback' === $cg['source'] && 'New from WPFactory' === Rules_Engine::get_reason( $cg, woo() ), ids( $p ) );
-set_highlights( array( 'cost-of-goods' => array( 'type' => 'improved', 'date' => '2026-11-01' ) ) );
-check( 'fallback pick, improved', 'Rebuilt with a new interface' === Rules_Engine::get_reason( $cg, woo() ) );
-Catalog::reset();
-
-$select = new ReflectionMethod( Rules_Engine::class, 'select' );
-$select->setAccessible( true );
-$two_hl = $select->invoke( null, array(
-	array( 'id' => 'a', 'weight' => 50, 'highlight' => true, 'job' => 'x', 'source' => 'rule' ),
-	array( 'id' => 'b', 'weight' => 40, 'highlight' => true, 'job' => 'y', 'source' => 'rule' ),
-	array( 'id' => 'c', 'weight' => 30, 'highlight' => false, 'job' => 'z', 'source' => 'rule' ),
-), array() );
-check( 'max one highlight card (select)', 'a, c' === ids( $two_hl ), ids( $two_hl ) );
+check( 'fallback pick: generic reason', $cg && 'fallback' === $cg['source'] && $generic === Rules_Engine::get_reason( $cg, woo() ), ids( $p ) );
+check( 'picks carry no highlight flag', ! array_filter( $p, function ( $x ) { return isset( $x['highlight'] ); } ) );
+$p = Rules_Engine::pick( woo( array( 'products' => 30 ) ), state( array( 'wish-list-for-woocommerce/wish-list-for-woocommerce.php', 'cost-of-goods-for-woocommerce/cost-of-goods-for-woocommerce.php' ) ) );
+check( 'Helpdesk and AI Image can both be picked (no New card limit any more)', null !== pick_of( $p, 'helpdesk' ) && null !== pick_of( $p, 'ai-image' ), ids( $p ) );
 
 // Helpdesk never gets the generic text: not a fallback, and its rule always has a reason.
 check( 'Helpdesk is not a fallback pick', ! in_array( 'helpdesk', array_merge( Rules_Engine::get_fallback( true ), Rules_Engine::get_fallback( false ) ), true ) );

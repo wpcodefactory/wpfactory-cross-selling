@@ -522,10 +522,11 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 			if ( empty( $shown ) ) {
 				return;
 			}
-			$tabs = array();
+			$shown = self::top_first( $shown );
+			$tabs  = array();
 			foreach ( Catalog::get_jobs() as $job => $label ) {
 				$count = count( array_filter( $shown, function ( $item ) use ( $job ) {
-					return ( 'new' === $job ? '' !== $item['highlighted'] : $job === $item['job'] );
+					return ( 'top' === $job ? $item['top'] : $job === $item['job'] );
 				} ) );
 				if ( $count > 0 ) {
 					$tabs[ $job ] = $label;
@@ -548,16 +549,11 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 				</div>
 				<div class="ak-card wpf-mp-list" id="wpf-mp-catalog-list" role="tabpanel" aria-labelledby="wpf-mp-tab-<?php echo esc_attr( $first ); ?>">
 					<?php foreach ( $shown as $item ) : ?>
-						<div class="wpf-mp-row" data-id="<?php echo esc_attr( $item['id'] ); ?>" data-job="<?php echo esc_attr( $item['job'] ); ?>" data-highlight="<?php echo esc_attr( $item['highlighted'] ); ?>" data-search="<?php echo esc_attr( strtolower( $item['name'] . ' ' . $item['desc'] ) ); ?>">
+						<div class="wpf-mp-row" data-id="<?php echo esc_attr( $item['id'] ); ?>" data-job="<?php echo esc_attr( $item['job'] ); ?>" data-top="<?php echo $item['top'] ? '1' : '0'; ?>" data-search="<?php echo esc_attr( strtolower( $item['name'] . ' ' . $item['desc'] ) ); ?>">
 							<div class="wpf-mp-row-main">
 								<?php self::render_logo( $item ); ?>
 								<div>
 									<b><?php echo esc_html( $item['name'] ); ?></b>
-									<?php if ( 'new' === $item['highlighted'] ) : ?>
-										<span class="ak-chip ak-chip-ok"><?php esc_html_e( 'New', 'wpfactory-cross-selling' ); ?></span>
-									<?php elseif ( 'improved' === $item['highlighted'] ) : ?>
-										<span class="ak-chip ak-chip-ok"><?php esc_html_e( 'Improved', 'wpfactory-cross-selling' ); ?></span>
-									<?php endif; ?>
 									<?php if ( in_array( $item['id'], $picked_ids, true ) ) : ?>
 										<span class="ak-chip ak-chip-info"><?php esc_html_e( 'Picked above', 'wpfactory-cross-selling' ); ?></span>
 									<?php endif; ?>
@@ -572,6 +568,29 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 				</div>
 			</section>
 			<?php
+		}
+
+		/**
+		 * top_first.
+		 *
+		 * Top plugins first, in Catalog::TOP order, then the rest in catalog order.
+		 * Every tab and search result keeps this order.
+		 *
+		 * @version 1.2.0
+		 * @since   1.2.0
+		 *
+		 * @param array $items Catalog items keyed by id.
+		 *
+		 * @return array
+		 */
+		static function top_first( array $items ) {
+			$top = array();
+			foreach ( Catalog::TOP as $id ) {
+				if ( isset( $items[ $id ] ) ) {
+					$top[ $id ] = $items[ $id ];
+				}
+			}
+			return $top + $items;
 		}
 
 		/**

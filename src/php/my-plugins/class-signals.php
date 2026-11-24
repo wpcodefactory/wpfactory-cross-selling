@@ -100,7 +100,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Signals', fal
 		/**
 		 * read_eu.
 		 *
-		 * Base country, or any country the store sells or ships to, is in the EU.
+		 * The store is based in the EU (its base country). Countries it sells or ships to don't count:
+		 * WooCommerce sells to all countries by default, which would make almost every store "EU".
 		 *
 		 * @version 1.2.0
 		 * @since   1.2.0
@@ -109,15 +110,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Signals', fal
 		 */
 		static function read_eu() {
 			$countries = WC()->countries;
-			$eu        = $countries->get_european_union_countries();
-			if ( in_array( $countries->get_base_country(), $eu, true ) ) {
-				return true;
-			}
-			$selling = array_merge(
-				array_keys( (array) $countries->get_allowed_countries() ),
-				array_keys( (array) $countries->get_shipping_countries() )
-			);
-			return ( count( array_intersect( $eu, $selling ) ) > 0 );
+			return in_array( $countries->get_base_country(), (array) $countries->get_european_union_countries(), true );
 		}
 
 		/**

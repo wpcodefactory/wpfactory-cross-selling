@@ -40,39 +40,32 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 		const CATALOG_VERSION = 1;
 
 		/**
-		 * How long a highlight lasts after its date (strtotime offset).
+		 * "Top plugins" tab: catalog ids, in the order they are listed.
+		 *
+		 * 9 top WPFactory plugins plus Product Filter by WBW, by wordpress.org active installs
+		 * (checked 2026-11-24). To change the tab, edit this list.
 		 *
 		 * @since 1.2.0
 		 */
-		const HIGHLIGHT_WINDOW = '-6 months';
-
-		/**
-		 * Highlight types.
-		 *
-		 * @since 1.2.0
-		 */
-		const HIGHLIGHT_TYPES = array( 'new', 'improved' );
-
-		/**
-		 * Time used for highlights (tests can set it).
-		 *
-		 * @since 1.2.0
-		 *
-		 * @var int|null
-		 */
-		protected static $now = null;
+		const TOP = array(
+			'product-filter',       // 50,000+ active installs.
+			'download-plugins',     // 30,000+.
+			'ean',                  // 10,000+.
+			'order-min-max-amount', // 10,000+.
+			'cost-of-goods',        // 8,000+.
+			'email-verification',   // 8,000+.
+			'eu-vat',               // 7,000+.
+			'payment-methods',      // 4,000+.
+			'min-max-quantity',     // 3,000+.
+			'wishlist',             // 2,000+.
+		);
 
 		/**
 		 * Item defaults.
 		 *
 		 * - name, desc:  short display copy (no em or en dashes).
-		 * - job:         tab id from get_jobs() (any tab but "new", which is computed).
-		 * - release:     first release date, Y-m-d: wp.org "added" date, or the wpfactory.com /
-		 *                woobewoo.com product page date for plugins without a listing. Empty if unreleased.
-		 * - highlight:   array( 'type' => 'new'|'improved', 'date' => 'Y-m-d' ). Left out, it is
-		 *                array( 'type' => 'new', 'date' => release ). An empty date means no highlight.
-		 * - highlighted: computed, not set here: the highlight type while it is within HIGHLIGHT_WINDOW
-		 *                of its date, else ''. Shown in the "New & improved" tab with a "New" or "Improved" chip.
+		 * - job:         tab id from get_jobs() (any tab but "top", which comes from TOP).
+		 * - top:         computed, not set here: the id is in TOP.
 		 * - store:       needs WooCommerce (hidden when WooCommerce is not active).
 		 * - vendor:      "wpfactory" or "wbw".
 		 * - wporg:       wp.org slug, so the free version can be installed. Empty for Pro-only.
@@ -91,8 +84,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 			'name'      => '',
 			'desc'      => '',
 			'job'       => '',
-			'release'   => '',
-			'highlight' => null,
 			'store'     => true,
 			'vendor'    => 'wpfactory',
 			'wporg'     => '',
@@ -116,7 +107,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 		/**
 		 * get_jobs.
 		 *
-		 * Tab ids and labels, in display order. "new" is a tab, not a job.
+		 * Tab ids and labels, in display order. "top" is a tab, not a job.
 		 *
 		 * @version 1.2.0
 		 * @since   1.2.0
@@ -125,7 +116,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 		 */
 		static function get_jobs() {
 			return array(
-				'new'     => __( 'New & improved', 'wpfactory-cross-selling' ),
+				'top'     => __( 'Top plugins', 'wpfactory-cross-selling' ),
 				'sell'    => __( 'Sell more per order', 'wpfactory-cross-selling' ),
 				'display' => __( 'Store display', 'wpfactory-cross-selling' ),
 				'rules'   => __( 'Set order rules', 'wpfactory-cross-selling' ),
@@ -134,86 +125,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 				'tidy'    => __( 'Tidy up WordPress', 'wpfactory-cross-selling' ),
 				'manage'  => __( 'Manage your store', 'wpfactory-cross-selling' ),
 			);
-		}
-
-		/**
-		 * now.
-		 *
-		 * @version 1.2.0
-		 * @since   1.2.0
-		 *
-		 * @return int
-		 */
-		static function now() {
-			return ( null !== self::$now ? self::$now : time() );
-		}
-
-		/**
-		 * set_now.
-		 *
-		 * For tests.
-		 *
-		 * @version 1.2.0
-		 * @since   1.2.0
-		 *
-		 * @param int|null $timestamp Timestamp, or null for the real time.
-		 */
-		static function set_now( $timestamp ) {
-			self::$now = $timestamp;
-			self::reset();
-		}
-
-		/**
-		 * is_recent.
-		 *
-		 * @version 1.2.0
-		 * @since   1.2.0
-		 *
-		 * @param string $date Date, Y-m-d.
-		 *
-		 * @return bool True from the date until HIGHLIGHT_WINDOW after it.
-		 */
-		static function is_recent( $date ) {
-			if ( ! is_string( $date ) || '' === $date || false === ( $time = strtotime( $date . ' 00:00:00 UTC' ) ) ) {
-				return false;
-			}
-			return ( $time >= strtotime( self::HIGHLIGHT_WINDOW, self::now() ) && $time <= self::now() );
-		}
-
-		/**
-		 * get_highlight.
-		 *
-		 * @version 1.2.0
-		 * @since   1.2.0
-		 *
-		 * @param array $item Catalog item (raw values merged with the defaults).
-		 *
-		 * @return array { type, date }
-		 */
-		static function get_highlight( $item ) {
-			$highlight = ( is_array( $item['highlight'] ) ?
-				array_merge( array( 'type' => 'new', 'date' => '' ), $item['highlight'] ) :
-				array( 'type' => 'new', 'date' => $item['release'] )
-			);
-			if ( ! in_array( $highlight['type'], self::HIGHLIGHT_TYPES, true ) ) {
-				$highlight['date'] = '';
-			}
-			return $highlight;
-		}
-
-		/**
-		 * get_highlighted.
-		 *
-		 * @version 1.2.0
-		 * @since   1.2.0
-		 *
-		 * @param array $item Catalog item (raw values merged with the defaults).
-		 *
-		 * @return string "new", "improved", or "" when not highlighted now.
-		 */
-		static function get_highlighted( $item ) {
-			$highlight = self::get_highlight( $item );
-			return ( self::is_recent( $highlight['date'] ) ? $highlight['type'] : '' );
 		}
 
 		/**
@@ -228,10 +139,9 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 			if ( null === self::$items ) {
 				$items = array();
 				foreach ( self::get_raw_items() as $id => $item ) {
-					$item                = array_merge( self::$defaults, $item, array( 'id' => $id ) );
-					$item['highlight']   = self::get_highlight( $item );
-					$item['highlighted'] = self::get_highlighted( $item );
-					$items[ $id ]        = $item;
+					$item         = array_merge( self::$defaults, $item, array( 'id' => $id ) );
+					$item['top']  = in_array( $id, self::TOP, true );
+					$items[ $id ] = $item;
 				}
 				self::$items = $items;
 			}
@@ -309,12 +219,10 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 
 			return array(
 
-				// New.
 				'ai-image'                     => array(
 					'name'      => __( 'AI Product Image Generator', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Turn plain product photos into professional images with AI, in bulk.', 'wpfactory-cross-selling' ),
 					'job'       => 'manage',
-					'release'   => '2026-03-07',
 					'pro_file'  => 'ai-product-image-generator/ai-product-image-generator.php',
 					'pro_url'   => $wpf . 'ai-product-image-generator-for-woocommerce/',
 					'icon_file' => 'ai-image.png',
@@ -324,9 +232,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Helpdesk Support Tickets', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Let customers open support tickets from their account, linked to their orders.', 'wpfactory-cross-selling' ),
 					'job'       => 'support',
-					'release'   => '2019-10-19',
-					// Revamp: set the date when the new version is released (empty = not highlighted).
-					'highlight' => array( 'type' => 'improved', 'date' => '' ),
 					'wporg'     => 'support-ticket-system-for-woocommerce',
 					'free_file' => 'support-ticket-system-for-woocommerce/support-ticket-system-for-woocommerce.php',
 					'pro_file'  => 'helpdesk-support-ticket-system-for-woocommerce-pro/support-ticket-system-woocommerce-pro.php',
@@ -340,7 +245,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'AI Assistant and MCP Server', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Run site tasks in plain language, or connect Claude and ChatGPT.', 'wpfactory-cross-selling' ),
 					'job'       => 'manage',
-					'release'   => '',
 					'store'     => false,
 					'free_file' => 'ai-assistant-mcp/ai-assistant-mcp.php',
 					'pro_file'  => 'ai-assistant-mcp-pro/ai-assistant-mcp-pro.php',
@@ -350,7 +254,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Product Filter by WBW', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Product filters that work with any theme and are built for mobile.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
-					'release'   => '2018-06-21',
 					'vendor'    => 'wbw',
 					'wporg'     => 'woo-product-filter',
 					'free_file' => 'woo-product-filter/woo-product-filter.php',
@@ -365,7 +268,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Wishlist', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Let customers save products to multiple named wishlists and share them.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
-					'release'   => '2017-01-20',
 					'wporg'     => 'wish-list-for-woocommerce',
 					'free_file' => 'wish-list-for-woocommerce/wish-list-for-woocommerce.php',
 					'pro_file'  => 'wish-list-for-woocommerce-pro/wish-list-for-woocommerce-pro.php',
@@ -377,7 +279,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Free Shipping Bar', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Show shoppers how much more to spend to get free shipping.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
-					'release'   => '2017-02-17',
 					'wporg'     => 'amount-left-free-shipping-woocommerce',
 					'free_file' => 'amount-left-free-shipping-woocommerce/left-to-free-shipping-for-woocommerce.php',
 					'pro_file'  => 'left-to-free-shipping-for-woocommerce-pro/left-to-free-shipping-for-woocommerce-pro.php',
@@ -389,7 +290,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Popups for Notices', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Turn cart, add to cart and checkout notices into popups shoppers notice.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
-					'release'   => '2018-08-29',
 					'wporg'     => 'popup-notices-for-woocommerce',
 					'free_file' => 'popup-notices-for-woocommerce/popup-notices-for-woocommerce.php',
 					'pro_file'  => 'popup-notices-for-woocommerce-pro/popup-notices-for-woocommerce-pro.php',
@@ -401,7 +301,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'MSRP Pricing', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Show the MSRP or RRP next to your price so the saving is clear.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
-					'release'   => '2018-05-07',
 					'wporg'     => 'msrp-for-woocommerce',
 					'free_file' => 'msrp-for-woocommerce/msrp-for-woocommerce.php',
 					'pro_file'  => 'msrp-for-woocommerce-pro/msrp-for-woocommerce-pro.php',
@@ -413,7 +312,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Coupons and Add to Cart by URL', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Apply a coupon and add products to the cart from one link.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
-					'release'   => '2017-08-18',
 					'wporg'     => 'url-coupons-for-woocommerce-by-algoritmika',
 					'free_file' => 'url-coupons-for-woocommerce-by-algoritmika/url-coupons-woocommerce.php',
 					'pro_file'  => 'url-coupons-woocommerce-pro/url-coupons-woocommerce-pro.php',
@@ -425,7 +323,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Price by Quantity', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Set tiered bulk prices by quantity, per product, category or user role.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
-					'release'   => '2017-08-18',
 					'wporg'     => 'wholesale-pricing-woocommerce',
 					'free_file' => 'wholesale-pricing-woocommerce/wholesale-pricing-woocommerce.php',
 					'pro_file'  => 'wholesale-pricing-woocommerce-pro/wholesale-pricing-woocommerce-pro.php',
@@ -437,7 +334,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Name Your Price', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Let shoppers make an offer, then accept, reject or counter it.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
-					'release'   => '2020-01-06',
 					'wporg'     => 'price-offerings-for-woocommerce',
 					'free_file' => 'price-offerings-for-woocommerce/price-offerings-for-woocommerce.php',
 					'pro_file'  => 'price-offerings-for-woocommerce-pro/price-offerings-for-woocommerce-pro.php',
@@ -449,7 +345,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Sitewide Discount', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Run scheduled store-wide discounts with the old price struck through.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
-					'release'   => '2018-06-07',
 					'wporg'     => 'global-shop-discount-for-woocommerce',
 					'free_file' => 'global-shop-discount-for-woocommerce/global-shop-discount-for-woocommerce.php',
 					'pro_file'  => 'global-shop-discount-for-woocommerce-pro/global-shop-discount-for-woocommerce-pro.php',
@@ -461,7 +356,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Coupons by User Role', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Limit coupons to certain user roles, or give each role its own discount.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
-					'release'   => '2021-02-25',
 					'wporg'     => 'coupon-by-user-role-for-woocommerce',
 					'free_file' => 'coupon-by-user-role-for-woocommerce/coupon-by-user-role-for-woocommerce.php',
 					'pro_file'  => 'coupon-by-user-role-for-woocommerce-pro/coupon-by-user-role-for-woocommerce-pro.php',
@@ -473,7 +367,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Sales Bump Popup', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Show upsells and cross-sells in a popup on product, cart and checkout pages.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
-					'release'   => '2025-05-30',
 					'pro_file'  => 'upsell-cross-sell-related-products-popup-for-woocommerce-pro/webd-woocommerce-crosell-popup-pro.php',
 					'pro_url'   => $wpf . 'woocommerce-upsell-cross-sell-related-products-popup/',
 					'icon_file' => 'sales-bump.png',
@@ -483,7 +376,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Variation Swatches', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Replace variation dropdowns with color and image swatches.', 'wpfactory-cross-selling' ),
 					'job'       => 'display',
-					'release'   => '2017-04-07',
 					'wporg'     => 'color-or-image-variation-swatches-for-woocommerce',
 					'free_file' => 'color-or-image-variation-swatches-for-woocommerce/color-or-image-variation-swatches-for-woocommerce.php',
 					'pro_file'  => 'color-or-image-variation-swatches-for-woocommerce-pro/color-or-image-variation-swatches-for-woocommerce-pro.php',
@@ -495,7 +387,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Related Categories', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Show related categories on product and shop pages.', 'wpfactory-cross-selling' ),
 					'job'       => 'display',
-					'release'   => '2020-12-18',
 					'wporg'     => 'related-categories-for-woocommerce',
 					'free_file' => 'related-categories-for-woocommerce/related-categories-for-woocommerce.php',
 					'pro_file'  => 'related-categories-for-woocommerce-pro/related-categories-for-woocommerce-pro.php',
@@ -507,7 +398,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Add to Cart Button Labels', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Change the Add to Cart text per product, user role or language.', 'wpfactory-cross-selling' ),
 					'job'       => 'display',
-					'release'   => '2017-02-10',
 					'wporg'     => 'add-to-cart-button-labels-for-woocommerce',
 					'free_file' => 'add-to-cart-button-labels-for-woocommerce/add-to-cart-button-labels-for-woocommerce.php',
 					'pro_file'  => 'add-to-cart-button-labels-for-woocommerce-pro/add-to-cart-button-labels-for-woocommerce-pro.php',
@@ -519,7 +409,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Custom Product Tabs', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Add custom tabs to product pages, for all products or just one.', 'wpfactory-cross-selling' ),
 					'job'       => 'display',
-					'release'   => '2015-10-11',
 					'wporg'     => 'product-tabs-for-woocommerce',
 					'free_file' => 'product-tabs-for-woocommerce/product-tabs-for-woocommerce.php',
 					'pro_file'  => 'product-tabs-for-woocommerce-pro/product-tabs-for-woocommerce-pro.php',
@@ -531,7 +420,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Products per Page', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Let shoppers choose how many products show on each page.', 'wpfactory-cross-selling' ),
 					'job'       => 'display',
-					'release'   => '2016-12-29',
 					'wporg'     => 'products-per-page-for-woocommerce',
 					'free_file' => 'products-per-page-for-woocommerce/products-per-page-for-woocommerce.php',
 					'pro_file'  => 'products-per-page-for-woocommerce-pro/products-per-page-for-woocommerce-pro.php',
@@ -543,7 +431,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'External Products URLs and Currencies', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Add several buy links and a custom currency to external and affiliate products.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
-					'release'   => '2017-08-20',
 					'wporg'     => 'external-products-currency-for-woocommerce',
 					'free_file' => 'external-products-currency-for-woocommerce/external-products-currency-for-woocommerce.php',
 					'pro_file'  => 'external-products-currency-for-woocommerce-pro/external-products-currency-for-woocommerce-pro.php',
@@ -556,7 +443,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Currency Switcher by WBW', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Let shoppers switch product prices to their own currency.', 'wpfactory-cross-selling' ),
 					'job'       => 'display',
-					'release'   => '2018-06-18',
 					'vendor'    => 'wbw',
 					'free_file' => 'woo-currency/wcu.php',
 					'pro_file'  => 'woocurrency-by-woobewoo-pro/woocurrency-by-woobewoo-pro.php',
@@ -567,7 +453,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Product Table by WBW', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Show products in a searchable, sortable table or order form.', 'wpfactory-cross-selling' ),
 					'job'       => 'display',
-					'release'   => '2018-05-08',
 					'vendor'    => 'wbw',
 					'free_file' => 'woo-product-tables/woo-producttables.php',
 					'pro_file'  => 'woo-producttables-pro/woo-producttables-pro.php',
@@ -578,8 +463,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Instant Checkout for ChatGPT', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Check if your store is ready for ChatGPT shopping and build its product feed.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
-					'release'   => '2026-03-09',
-					'highlight' => array( 'type' => 'new', 'date' => '2026-03-09' ),
 					'wporg'     => 'instant-checkout-for-chatgpt-openai-readiness-for-woocommerce',
 					'free_file' => 'instant-checkout-for-chatgpt-openai-readiness-for-woocommerce/instant-checkout-for-chatgpt-openai-readiness-for-woocommerce.php',
 					'icon_url'  => $psw . 'instant-checkout-for-chatgpt-openai-readiness-for-woocommerce/assets/icon.svg?rev=3478298',
@@ -591,7 +474,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Min Max Step Quantity', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Set minimum, maximum and step quantities, or sell in decimals.', 'wpfactory-cross-selling' ),
 					'job'       => 'rules',
-					'release'   => '2017-11-09',
 					'wporg'     => 'product-quantity-for-woocommerce',
 					'free_file' => 'product-quantity-for-woocommerce/product-quantity-for-woocommerce.php',
 					'pro_file'  => 'product-quantity-for-woocommerce-pro/product-quantity-for-woocommerce-pro.php',
@@ -603,7 +485,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Maximum Products per User', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Limit how much of a product each customer can buy over time.', 'wpfactory-cross-selling' ),
 					'job'       => 'rules',
-					'release'   => '2019-04-19',
 					'wporg'     => 'maximum-products-per-user-for-woocommerce',
 					'free_file' => 'maximum-products-per-user-for-woocommerce/maximum-products-per-user-for-woocommerce.php',
 					'pro_file'  => 'maximum-products-per-user-for-woocommerce-pro/maximum-products-per-user-for-woocommerce-pro.php',
@@ -615,7 +496,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Order Min/Max Amount', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Set minimum and maximum order limits by total, quantity or weight.', 'wpfactory-cross-selling' ),
 					'job'       => 'rules',
-					'release'   => '2017-02-03',
 					'wporg'     => 'order-minimum-amount-for-woocommerce',
 					'free_file' => 'order-minimum-amount-for-woocommerce/order-minimum-amount-for-woocommerce.php',
 					'pro_file'  => 'order-minimum-amount-for-woocommerce-pro/order-minimum-amount-for-woocommerce-pro.php',
@@ -627,7 +507,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Payment Methods by Product and Country', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Show or hide payment methods by product, category or country.', 'wpfactory-cross-selling' ),
 					'job'       => 'rules',
-					'release'   => '2017-08-29',
 					'wporg'     => 'payment-gateways-per-product-categories-for-woocommerce',
 					'free_file' => 'payment-gateways-per-product-categories-for-woocommerce/payment-gateways-per-product-for-woocommerce.php',
 					'pro_file'  => 'payment-gateways-per-product-for-woocommerce-pro/payment-gateways-per-product-for-woocommerce-pro.php',
@@ -639,7 +518,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Conditional Payment Gateways', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Show payment methods by cart amount, time of day or customer IP.', 'wpfactory-cross-selling' ),
 					'job'       => 'rules',
-					'release'   => '2021-03-28',
 					'wporg'     => 'conditional-payment-gateways-for-woocommerce',
 					'free_file' => 'conditional-payment-gateways-for-woocommerce/conditional-payment-gateways-for-woocommerce.php',
 					'pro_file'  => 'conditional-payment-gateways-for-woocommerce-pro/conditional-payment-gateways-for-woocommerce-pro.php',
@@ -651,7 +529,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Payment Gateways by Location', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Show payment methods by country, state or postal code.', 'wpfactory-cross-selling' ),
 					'job'       => 'rules',
-					'release'   => '2018-05-15',
 					'wporg'     => 'payment-gateways-by-customer-location-for-woocommerce',
 					'free_file' => 'payment-gateways-by-customer-location-for-woocommerce/payment-gateways-by-customer-location-for-woocommerce.php',
 					'pro_file'  => 'payment-gateways-by-customer-location-for-woocommerce-pro/payment-gateways-by-customer-location-for-woocommerce-pro.php',
@@ -663,7 +540,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Payment Gateways by Shipping', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Match payment methods to the shipping method the customer picks.', 'wpfactory-cross-selling' ),
 					'job'       => 'rules',
-					'release'   => '2018-05-16',
 					'wporg'     => 'payment-gateways-by-shipping-for-woocommerce',
 					'free_file' => 'payment-gateways-by-shipping-for-woocommerce/payment-gateways-by-shipping-for-woocommerce.php',
 					'pro_file'  => 'payment-gateways-by-shipping-for-woocommerce-pro/payment-gateways-by-shipping-for-woocommerce-pro.php',
@@ -675,7 +551,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Payment Gateway Currency', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Charge each payment method in its own currency, with live or manual rates.', 'wpfactory-cross-selling' ),
 					'job'       => 'rules',
-					'release'   => '2020-07-21',
 					'wporg'     => 'payment-gateways-by-currency-for-woocommerce',
 					'free_file' => 'payment-gateways-by-currency-for-woocommerce/payment-gateways-by-currency-for-woocommerce.php',
 					'pro_file'  => 'payment-gateways-by-currency-for-woocommerce-pro/payment-gateways-by-currency-for-woocommerce-pro.php',
@@ -687,7 +562,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Conditional Shipping', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Show or hide shipping methods by city, product, payment method and more.', 'wpfactory-cross-selling' ),
 					'job'       => 'rules',
-					'release'   => '2020-08-28',
 					'wporg'     => 'wpfactory-conditional-shipping-for-woocommerce',
 					'free_file' => 'wpfactory-conditional-shipping-for-woocommerce/conditional-shipping-for-woocommerce.php',
 					'pro_file'  => 'conditional-shipping-for-woocommerce-pro/conditional-shipping-for-woocommerce-pro.php',
@@ -699,7 +573,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Weight Based Shipping', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Set shipping rates by weight tiers per zone, with handling fees.', 'wpfactory-cross-selling' ),
 					'job'       => 'rules',
-					'release'   => '2025-12-22',
 					'pro_file'  => 'woocommerce-weight-based-shipping/woocommerce-weight-based-shipping.php',
 					'pro_url'   => $wpf . 'weight-based-shipping-for-woocommerce/',
 					'icon_file' => 'weight-based-shipping.png',
@@ -709,7 +582,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Custom Checkout Fields', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Add checkout fields that only show when they apply.', 'wpfactory-cross-selling' ),
 					'job'       => 'rules',
-					'release'   => '2018-05-05',
 					'wporg'     => 'custom-checkout-fields-for-woocommerce',
 					'free_file' => 'custom-checkout-fields-for-woocommerce/custom-checkout-fields-for-woocommerce.php',
 					'pro_file'  => 'custom-checkout-fields-for-woocommerce-pro/custom-checkout-fields-for-woocommerce-pro.php',
@@ -721,7 +593,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Order Status Rules', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Change order statuses automatically on a schedule you set.', 'wpfactory-cross-selling' ),
 					'job'       => 'rules',
-					'release'   => '2019-07-11',
 					'wporg'     => 'order-status-rules-for-woocommerce',
 					'free_file' => 'order-status-rules-for-woocommerce/order-status-rules-for-woocommerce.php',
 					'pro_file'  => 'order-status-rules-for-woocommerce-pro/order-status-rules-for-woocommerce-pro.php',
@@ -735,7 +606,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Cost of Goods', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Track product costs and see real profit per product and order.', 'wpfactory-cross-selling' ),
 					'job'       => 'numbers',
-					'release'   => '2018-12-06',
 					'wporg'     => 'cost-of-goods-for-woocommerce',
 					'free_file' => 'cost-of-goods-for-woocommerce/cost-of-goods-for-woocommerce.php',
 					'pro_file'  => 'cost-of-goods-for-woocommerce-pro/cost-of-goods-for-woocommerce-pro.php',
@@ -747,7 +617,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'EAN Barcode Generator', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Add EAN, UPC, ISBN and GTIN codes and print barcodes or QR codes.', 'wpfactory-cross-selling' ),
 					'job'       => 'numbers',
-					'release'   => '2020-10-28',
 					'wporg'     => 'ean-for-woocommerce',
 					'free_file' => 'ean-for-woocommerce/ean-for-woocommerce.php',
 					'pro_file'  => 'ean-for-woocommerce-pro/ean-for-woocommerce-pro.php',
@@ -759,7 +628,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'EU VAT Manager', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Validate EU VAT numbers at checkout and exempt valid B2B customers.', 'wpfactory-cross-selling' ),
 					'job'       => 'numbers',
-					'release'   => '2018-05-30',
 					'wporg'     => 'eu-vat-for-woocommerce',
 					'free_file' => 'eu-vat-for-woocommerce/eu-vat-for-woocommerce.php',
 					'pro_file'  => 'eu-vat-for-woocommerce-pro/eu-vat-for-woocommerce-pro.php',
@@ -771,7 +639,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Product XML Feeds', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Create auto-updating XML product feeds for Google Shopping, Amazon and more.', 'wpfactory-cross-selling' ),
 					'job'       => 'numbers',
-					'release'   => '2017-01-10',
 					'wporg'     => 'product-xml-feeds-for-woocommerce',
 					'free_file' => 'product-xml-feeds-for-woocommerce/product-xml-feeds-for-woocommerce.php',
 					'pro_file'  => 'product-xml-feeds-for-woocommerce-pro/product-xml-feeds-for-woocommerce-pro.php',
@@ -783,7 +650,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Advanced Reporting and Statistics', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Sales reports and forecasts by product, country or date, with Excel export.', 'wpfactory-cross-selling' ),
 					'job'       => 'numbers',
-					'release'   => '2019-01-26',
 					'wporg'     => 'webd-woocommerce-advanced-reporting-statistics',
 					'free_file' => 'webd-woocommerce-advanced-reporting-statistics/webd-woocommerce-reporting-statistics.php',
 					'pro_file'  => 'advanced-reporting-statistics-for-woocommerce-pro/woocommerce-reporting-statistics-pro.php',
@@ -795,7 +661,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Stock History and Reports', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Keep daily stock snapshots and see how stock changed over time.', 'wpfactory-cross-selling' ),
 					'job'       => 'numbers',
-					'release'   => '2022-03-31',
 					'wporg'     => 'stock-snapshot-for-woocommerce',
 					'free_file' => 'stock-snapshot-for-woocommerce/stock-snapshot-for-woocommerce.php',
 					'pro_file'  => 'stock-snapshot-for-woocommerce-pro/stock-snapshot-for-woocommerce-pro.php',
@@ -809,7 +674,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Email Verification', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Make new customers verify their email and keep bot accounts out.', 'wpfactory-cross-selling' ),
 					'job'       => 'support',
-					'release'   => '2018-05-30',
 					'wporg'     => 'emails-verification-for-woocommerce',
 					'free_file' => 'emails-verification-for-woocommerce/email-verification-for-woocommerce.php',
 					'pro_file'  => 'email-verification-for-woocommerce-pro/email-verification-for-woocommerce-pro.php',
@@ -821,7 +685,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Custom Emails and Recipients', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Send extra emails on order, user or product events, to anyone you choose.', 'wpfactory-cross-selling' ),
 					'job'       => 'support',
-					'release'   => '2021-07-29',
 					'wporg'     => 'custom-emails-for-woocommerce',
 					'free_file' => 'custom-emails-for-woocommerce/custom-emails-for-woocommerce.php',
 					'pro_file'  => 'custom-emails-for-woocommerce-pro/custom-emails-for-woocommerce-pro.php',
@@ -833,7 +696,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Replies to Reviews', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Reply to product reviews right on the product page.', 'wpfactory-cross-selling' ),
 					'job'       => 'support',
-					'release'   => '2018-04-22',
 					'pro_file'  => 'frontend-replies-in-woocommerce-reviews-pro/frontend-replies-in-woocommerce-reviews-pro.php',
 					'pro_url'   => $wpf . 'frontend-replies-in-woocommerce-reviews/',
 					'icon_file' => 'review-replies.png',
@@ -845,7 +707,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Catalog Health Scanner', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Scan every product for issues that stop it from selling.', 'wpfactory-cross-selling' ),
 					'job'       => 'manage',
-					'release'   => '2026-08-03',
 					'free_file' => 'wpfactory-catalog-health-scanner-for-woocommerce/wpfactory-catalog-health-scanner-for-woocommerce.php',
 					'pro_file'  => 'wpfactory-catalog-health-scanner-for-woocommerce-pro/wpfactory-catalog-health-scanner-for-woocommerce-pro.php',
 					'pro_url'   => $wpf . 'catalog-health-scanner-for-woocommerce/',
@@ -856,7 +717,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Bulk Price Editor', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Update prices in bulk, with a preview before anything changes.', 'wpfactory-cross-selling' ),
 					'job'       => 'manage',
-					'release'   => '2016-03-01',
 					'wporg'     => 'bulk-price-converter-for-woocommerce',
 					'free_file' => 'bulk-price-converter-for-woocommerce/bulk-price-converter-for-woocommerce.php',
 					'pro_file'  => 'bulk-price-converter-for-woocommerce-pro/bulk-price-converter-for-woocommerce-pro.php',
@@ -868,7 +728,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Stock Update Triggers', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Choose which order statuses reduce or restore stock.', 'wpfactory-cross-selling' ),
 					'job'       => 'manage',
-					'release'   => '2021-01-20',
 					'wporg'     => 'stock-triggers-for-woocommerce',
 					'free_file' => 'stock-triggers-for-woocommerce/stock-triggers-for-woocommerce.php',
 					'pro_file'  => 'stock-triggers-for-woocommerce-pro/stock-triggers-for-woocommerce-pro.php',
@@ -880,7 +739,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Export Products, Orders and Customers', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Export products, orders and customers to CSV or XML, with the columns you pick.', 'wpfactory-cross-selling' ),
 					'job'       => 'manage',
-					'release'   => '2016-12-22',
 					'wporg'     => 'export-woocommerce',
 					'free_file' => 'export-woocommerce/export-woocommerce.php',
 					'pro_file'  => 'export-woocommerce-pro/export-woocommerce-pro.php',
@@ -892,7 +750,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'PDF Invoices and Packing Slips', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Create PDF invoices, packing slips and credit notes automatically.', 'wpfactory-cross-selling' ),
 					'job'       => 'manage',
-					'release'   => '2020-01-31',
 					'wporg'     => 'pdf-invoicing-for-woocommerce',
 					'free_file' => 'pdf-invoicing-for-woocommerce/pdf-invoicing-for-woocommerce.php',
 					'pro_file'  => 'pdf-invoicing-for-woocommerce-pro/pdf-invoicing-for-woocommerce-pro.php',
@@ -904,7 +761,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Custom Order Status', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Add your own order statuses with colors, icons and emails.', 'wpfactory-cross-selling' ),
 					'job'       => 'manage',
-					'release'   => '2019-01-28',
 					'wporg'     => 'order-status-for-woocommerce',
 					'free_file' => 'order-status-for-woocommerce/order-status-for-woocommerce.php',
 					'pro_file'  => 'order-status-for-woocommerce-pro/order-status-for-woocommerce-pro.php',
@@ -916,7 +772,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Product Notes', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Add private admin notes or public note tabs to products.', 'wpfactory-cross-selling' ),
 					'job'       => 'manage',
-					'release'   => '2020-08-12',
 					'wporg'     => 'product-notes-for-woocommerce',
 					'free_file' => 'product-notes-for-woocommerce/internal-product-notes-for-woocommerce.php',
 					'pro_file'  => 'internal-product-notes-for-woocommerce-pro/internal-product-notes-for-woocommerce-pro.php',
@@ -928,7 +783,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Products Import and Export with Excel', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Import and export products straight from Excel files, no CSV step.', 'wpfactory-cross-selling' ),
 					'job'       => 'manage',
-					'release'   => '2025-04-13',
 					'pro_file'  => 'product-excel-import-export-for-woocommerce-pro/wpeiePro.php',
 					'pro_url'   => $wpf . 'woocommerce-products-import-export-with-excel/',
 					'icon_file' => 'products-excel.png',
@@ -938,7 +792,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Store Migration with Excel', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Move products, orders, customers, coupons and reviews with Excel files.', 'wpfactory-cross-selling' ),
 					'job'       => 'manage',
-					'release'   => '2025-05-30',
 					'pro_file'  => 'migrate-import-export-excel-for-woocommerce-pro/store-migration-excel-pro.php',
 					'pro_url'   => $wpf . 'all-in-one-woocommerce-migration-import-export-to-excel/',
 					'icon_file' => 'store-migration-excel.png',
@@ -948,7 +801,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Stock Manager with Excel', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Update stock and prices for many products at once from Excel.', 'wpfactory-cross-selling' ),
 					'job'       => 'manage',
-					'release'   => '2025-04-27',
 					'pro_file'  => 'products-stock-manager-excel-for-woocommerce-pro/stock-manager-woocommerce-pro.php',
 					'pro_url'   => $wpf . 'products-stock-manager-with-excel-for-woocommerce/',
 					'icon_file' => 'stock-manager-excel.png',
@@ -958,7 +810,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Content Importer with Excel', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Import posts, pages and products from Excel, including SEO fields.', 'wpfactory-cross-selling' ),
 					'job'       => 'manage',
-					'release'   => '2025-05-30',
 					'store'     => false,
 					'pro_file'  => 'content-importer-excel-for-wordpress-woocommerce-pro/content-excel-importer-pro.php',
 					'pro_url'   => $wpf . 'content-importer-for-wordpress-woocommerce-with-excel/',
@@ -971,7 +822,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'File Renaming on Upload', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Rename media files automatically on upload for clean, SEO friendly names.', 'wpfactory-cross-selling' ),
 					'job'       => 'tidy',
-					'release'   => '2013-07-19',
 					'store'     => false,
 					'wporg'     => 'file-renaming-on-upload',
 					'free_file' => 'file-renaming-on-upload/file-renaming-on-upload.php',
@@ -984,7 +834,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Download Plugins and Themes', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Download any plugin or theme as a ZIP from the dashboard.', 'wpfactory-cross-selling' ),
 					'job'       => 'tidy',
-					'release'   => '2016-10-01',
 					'store'     => false,
 					'wporg'     => 'download-plugins-dashboard',
 					'free_file' => 'download-plugins-dashboard/download-plugins-from-dashboard.php',
@@ -997,7 +846,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Back Button Widget', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Add a Back button anywhere on your site.', 'wpfactory-cross-selling' ),
 					'job'       => 'tidy',
-					'release'   => '2017-08-03',
 					'store'     => false,
 					'wporg'     => 'back-button-widget',
 					'free_file' => 'back-button-widget/back-button-widget.php',
@@ -1010,7 +858,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Slugs Manager', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Find and delete old permalinks WordPress keeps in the database.', 'wpfactory-cross-selling' ),
 					'job'       => 'tidy',
-					'release'   => '2013-04-29',
 					'store'     => false,
 					'wporg'     => 'remove-old-slugspermalinks',
 					'free_file' => 'remove-old-slugspermalinks/remove-old-slugs.php',
@@ -1023,7 +870,6 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'name'      => __( 'Remove Special Characters', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Strip special characters from permalinks and redirect the old URLs.', 'wpfactory-cross-selling' ),
 					'job'       => 'tidy',
-					'release'   => '2018-09-13',
 					'store'     => false,
 					'wporg'     => 'remove-special-characters-from-permalinks',
 					'free_file' => 'remove-special-characters-from-permalinks/remove-special-characters-from-permalinks.php',

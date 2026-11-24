@@ -21,7 +21,7 @@
 	var current = tabs.length ? tabs[ 0 ].getAttribute( 'data-job' ) : '';
 
 	function inTab( row, job ) {
-		return 'new' === job ? '' !== ( row.getAttribute( 'data-highlight' ) || '' ) : job === row.getAttribute( 'data-job' );
+		return 'top' === job ? '1' === row.getAttribute( 'data-top' ) : job === row.getAttribute( 'data-job' );
 	}
 
 	// Words of a text, lower case: letters and digits in any language, split on everything else.

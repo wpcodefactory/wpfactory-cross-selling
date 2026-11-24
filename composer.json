@@ -3,6 +3,9 @@
   "autoload": {
     "classmap": [
       "src/php/"
+    ],
+    "files": [
+      "src/php/my-plugins/loader.php"
     ]
   },
   "repositories": [
@@ -22,7 +25,7 @@
       "@composer run wp-make-mo"
     ]
   },
-  "require-dev":{
+  "require-dev": {
     "wp-cli/wp-cli-bundle": "*",
     "composer/composer": "^2.10.3"
   },

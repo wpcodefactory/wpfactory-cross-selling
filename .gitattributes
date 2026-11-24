@@ -11,3 +11,4 @@ webpack.config.js export-ignore
 wpfactory-cross-selling-test.php export-ignore
 # SCSS
 src/scss/* export-ignore
+tests/ export-ignore

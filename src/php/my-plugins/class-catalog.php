@@ -127,6 +127,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 			return array(
 				'new'     => __( 'New & improved', 'wpfactory-cross-selling' ),
 				'sell'    => __( 'Sell more per order', 'wpfactory-cross-selling' ),
+				'display' => __( 'Store display', 'wpfactory-cross-selling' ),
 				'rules'   => __( 'Set order rules', 'wpfactory-cross-selling' ),
 				'numbers' => __( 'Know your numbers', 'wpfactory-cross-selling' ),
 				'support' => __( 'Support customers', 'wpfactory-cross-selling' ),
@@ -479,7 +480,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 				'variation-swatches'           => array(
 					'name'      => __( 'Variation Swatches', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Show product variations as color, image or label swatches.', 'wpfactory-cross-selling' ),
-					'job'       => 'sell',
+					'job'       => 'display',
 					'release'   => '2017-04-07',
 					'wporg'     => 'color-or-image-variation-swatches-for-woocommerce',
 					'free_file' => 'color-or-image-variation-swatches-for-woocommerce/color-or-image-variation-swatches-for-woocommerce.php',
@@ -491,7 +492,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 				'related-categories'           => array(
 					'name'      => __( 'Related Categories', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Show related categories on product and shop pages.', 'wpfactory-cross-selling' ),
-					'job'       => 'sell',
+					'job'       => 'display',
 					'release'   => '2020-12-18',
 					'wporg'     => 'related-categories-for-woocommerce',
 					'free_file' => 'related-categories-for-woocommerce/related-categories-for-woocommerce.php',
@@ -503,7 +504,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 				'add-to-cart-labels'           => array(
 					'name'      => __( 'Add to Cart Button Labels', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Change the Add to cart button text across your store.', 'wpfactory-cross-selling' ),
-					'job'       => 'sell',
+					'job'       => 'display',
 					'release'   => '2017-02-10',
 					'wporg'     => 'add-to-cart-button-labels-for-woocommerce',
 					'free_file' => 'add-to-cart-button-labels-for-woocommerce/add-to-cart-button-labels-for-woocommerce.php',
@@ -515,7 +516,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 				'product-tabs'                 => array(
 					'name'      => __( 'Custom Product Tabs', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Add and manage extra tabs on product pages.', 'wpfactory-cross-selling' ),
-					'job'       => 'sell',
+					'job'       => 'display',
 					'release'   => '2015-10-11',
 					'wporg'     => 'product-tabs-for-woocommerce',
 					'free_file' => 'product-tabs-for-woocommerce/product-tabs-for-woocommerce.php',
@@ -527,7 +528,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 				'products-per-page'            => array(
 					'name'      => __( 'Products per Page', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Let shoppers choose how many products they see per page.', 'wpfactory-cross-selling' ),
-					'job'       => 'sell',
+					'job'       => 'display',
 					'release'   => '2016-12-29',
 					'wporg'     => 'products-per-page-for-woocommerce',
 					'free_file' => 'products-per-page-for-woocommerce/products-per-page-for-woocommerce.php',
@@ -552,7 +553,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 				'currency-switcher'            => array(
 					'name'      => __( 'Currency Switcher by WBW', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Let shoppers switch product prices to their own currency.', 'wpfactory-cross-selling' ),
-					'job'       => 'sell',
+					'job'       => 'display',
 					'release'   => '2018-06-18',
 					'vendor'    => 'wbw',
 					'free_file' => 'woo-currency/wcu.php',
@@ -563,7 +564,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 				'product-table'                => array(
 					'name'      => __( 'Product Table by WBW', 'wpfactory-cross-selling' ),
 					'desc'      => __( 'Show products in a searchable, sortable table or order form.', 'wpfactory-cross-selling' ),
-					'job'       => 'sell',
+					'job'       => 'display',
 					'release'   => '2018-05-08',
 					'vendor'    => 'wbw',
 					'free_file' => 'woo-product-tables/woo-producttables.php',
@@ -576,6 +577,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog', fal
 					'desc'      => __( 'Check if your store is ready for ChatGPT shopping and build its product feed.', 'wpfactory-cross-selling' ),
 					'job'       => 'sell',
 					'release'   => '2026-03-09',
+					'highlight' => array( 'type' => 'new', 'date' => '2026-03-09' ),
 					'wporg'     => 'instant-checkout-for-chatgpt-openai-readiness-for-woocommerce',
 					'free_file' => 'instant-checkout-for-chatgpt-openai-readiness-for-woocommerce/instant-checkout-for-chatgpt-openai-readiness-for-woocommerce.php',
 					'icon_url'  => $psw . 'instant-checkout-for-chatgpt-openai-readiness-for-woocommerce/assets/icon.svg?rev=3478298',

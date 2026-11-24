@@ -122,6 +122,14 @@ foreach ( array_merge( Rules_Engine::get_fallback( true ), Rules_Engine::get_fal
 $hl_ids = array_keys( array_filter( $items, function ( $i ) { return '' !== $i['highlighted']; } ) );
 check( 'New & improved tab on 2026-11-24 (6 months)', array( 'catalog-health-scanner' ) === $hl_ids, implode( ', ', $hl_ids ) );
 check( 'tab label', 'New & improved' === Catalog::get_jobs()['new'], Catalog::get_jobs()['new'] );
+check( 'tab order', array( 'new', 'sell', 'display', 'rules', 'numbers', 'support', 'tidy', 'manage' ) === $jobs, implode( ',', $jobs ) );
+$display = array_keys( array_filter( $items, function ( $i ) { return 'display' === $i['job']; } ) );
+sort( $display );
+check( 'Store display tab: 7 plugins', array( 'add-to-cart-labels', 'currency-switcher', 'product-table', 'product-tabs', 'products-per-page', 'related-categories', 'variation-swatches' ) === $display, implode( ', ', $display ) );
+$sell = count( array_filter( $items, function ( $i ) { return 'sell' === $i['job']; } ) );
+check( 'Sell more per order: 13 plugins', 13 === $sell, $sell );
+check( 'Instant Checkout: highlight new on its release date', array( 'type' => 'new', 'date' => '2026-03-09' ) === $items['instant-checkout-chatgpt']['highlight'] );
+check( 'Instant Checkout: not highlighted on 2026-11-24 (its 6 months ended 2026-09-09)', '' === $items['instant-checkout-chatgpt']['highlighted'] );
 check( 'recent: 6 months minus a day', Catalog::is_recent( '2026-05-25' ) );
 check( 'not recent: 6 months plus a day', ! Catalog::is_recent( '2026-05-23' ) );
 check( 'not recent: future date', ! Catalog::is_recent( '2026-12-01' ) );

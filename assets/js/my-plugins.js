@@ -24,11 +24,34 @@
 		return 'new' === job ? '' !== ( row.getAttribute( 'data-highlight' ) || '' ) : job === row.getAttribute( 'data-job' );
 	}
 
+	// Words of a text, lower case: letters and digits in any language, split on everything else.
+	var splitter;
+	try {
+		splitter = new RegExp( '[^\\p{L}\\p{N}]+', 'u' );
+	} catch ( e ) {
+		splitter = /[\s.,;:!?'"()\/&+\-]+/;
+	}
+	function words( text ) {
+		return String( text || '' ).toLowerCase().split( splitter ).filter( Boolean );
+	}
+	var rowWords = rows.map( function ( row ) {
+		return words( row.getAttribute( 'data-search' ) );
+	} );
+
+	// Every search term must match the start of a word ("vat" finds "VAT", not "private").
+	function matches( index, terms ) {
+		return terms.every( function ( term ) {
+			return rowWords[ index ].some( function ( word ) {
+				return 0 === word.indexOf( term );
+			} );
+		} );
+	}
+
 	function applyFilter() {
-		var q = search ? search.value.trim().toLowerCase() : '';
+		var q = search ? words( search.value ) : [];
 		var visible = [];
-		rows.forEach( function ( row ) {
-			var show = q ? row.getAttribute( 'data-search' ).indexOf( q ) > -1 : inTab( row, current );
+		rows.forEach( function ( row, index ) {
+			var show = q.length ? matches( index, q ) : inTab( row, current );
 			row.hidden = ! show;
 			row.classList.remove( 'is-last' );
 			if ( show ) {
@@ -43,7 +66,7 @@
 		}
 		// While searching, results come from every tab, so no tab is selected.
 		tabs.forEach( function ( tab ) {
-			var on = ! q && tab.getAttribute( 'data-job' ) === current;
+			var on = ! q.length && tab.getAttribute( 'data-job' ) === current;
 			tab.classList.toggle( 'on', on );
 			tab.setAttribute( 'aria-selected', on ? 'true' : 'false' );
 			tab.tabIndex = ( tab.getAttribute( 'data-job' ) === current ) ? 0 : -1;

@@ -142,6 +142,13 @@ check( 'unknown highlight type is ignored', '' === Catalog::get_highlighted( arr
 check( 'WBW Pro-only items', Catalog::is_pro_only( $items['currency-switcher'] ) && Catalog::is_pro_only( $items['product-table'] ) );
 check( 'AI Assistant is not offered until it has a listing', ! Catalog::is_available( $items['ai-assistant'] ) );
 check( 'AI Product Image Generator is Pro only', Catalog::is_pro_only( $items['ai-image'] ) );
+foreach ( array( 'ai-image', 'sales-bump', 'weight-based-shipping', 'review-replies', 'products-excel', 'store-migration-excel', 'stock-manager-excel', 'content-importer-excel' ) as $id ) {
+	$size = @getimagesize( dirname( __DIR__, 2 ) . '/assets/img/icons/' . $items[ $id ]['icon_file'] );
+	check( "$id: bundled 128x128 PNG icon", $id . '.png' === $items[ $id ]['icon_file'] && $size && 128 === $size[0] && 128 === $size[1] && 'image/png' === $size['mime'] );
+}
+check( 'instant-checkout-chatgpt: no live Pro page, so no Get Pro', '' === $items['instant-checkout-chatgpt']['pro_url'] && Catalog::is_available( $items['instant-checkout-chatgpt'] ) && ! Catalog::is_pro_only( $items['instant-checkout-chatgpt'] ) );
+check( 'Admin Bar Addition removed', ! isset( $items['admin-bar'] ) );
+check( '60 catalog entries (59 in the copy file plus AI Assistant)', 60 === count( $items ), count( $items ) );
 
 // ---------------------------------------------------------------- Site state.
 $st = state(

@@ -37,7 +37,8 @@
 .wpf-myplugins .wpf-mp-allaccess-text{display:flex;flex-direction:column;gap:2px;max-width:680px}
 
 /* Picked for your store. */
-.wpf-myplugins .wpf-mp-picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--ak-s4)}
+/* 3 columns, or 1 below 1000px: never a 2 + 1 orphan. */
+.wpf-myplugins .wpf-mp-picks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ak-s4)}
 .wpf-myplugins .wpf-mp-pick{display:flex;flex-direction:column}
 .wpf-myplugins .wpf-mp-reason{padding:10px var(--ak-s5);background:var(--ak-surface-2);border-bottom:1px solid var(--ak-line);font-size:13px;font-weight:600;color:var(--ak-accent-ink)}
 .wpf-myplugins .wpf-mp-pick-body{padding:var(--ak-s4) var(--ak-s5);display:flex;flex-direction:column;gap:6px;flex-grow:1}
@@ -64,6 +65,10 @@
 .wpf-myplugins .wpf-mp-empty{margin:0;padding:var(--ak-s5);color:var(--ak-muted)}
 .wpf-myplugins .wpf-mp-done{font-size:13px;font-weight:600;color:var(--ak-ok)}
 
+@media screen and (max-width:999px){
+  .wpf-myplugins .wpf-mp-picks{grid-template-columns:minmax(0,1fr)}
+}
+
 /* WordPress admin goes to its mobile layout at 782px. */
 @media screen and (max-width:782px){
   .wpf-myplugins{margin-left:-10px;min-height:calc(100vh - 46px)}
@@ -73,7 +78,13 @@
   .wpf-myplugins .wpf-mp-owned-action{grid-column:1/-1;justify-self:start}
   .wpf-myplugins .wpf-mp-row{grid-template-columns:1fr;padding:var(--ak-s3) var(--ak-s4)}
   .wpf-myplugins .wpf-mp-row .wpf-mp-actions{justify-content:flex-start;padding-left:52px}
-  .wpf-myplugins .wpf-mp-picks{grid-template-columns:1fr}
   .wpf-myplugins .wpf-mp-search{width:100%}
   .wpf-myplugins .wpf-mp-search .ak-input{flex:1;width:auto}
+}
+
+/* Job tabs: one row that scrolls sideways. */
+@media screen and (max-width:599px){
+  .wpf-myplugins .wpf-mp-tabs{display:flex;flex-wrap:nowrap;align-self:stretch;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+  .wpf-myplugins .wpf-mp-tabs button{flex:0 0 auto;white-space:nowrap}
+  .wpf-myplugins .wpf-mp-tabs button:focus-visible{outline-offset:-3px}
 }

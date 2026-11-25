@@ -8,6 +8,15 @@
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities
 
+## [1.2.0] - 2026-11-25
+### Added
+* "My Plugins" page in the WPFactory menu: the WPFactory plugins on the site, 3 picks based on the store's settings, and every WPFactory plugin with search and tabs. Free plugins install and activate from the page.
+* The newest copy of the page wins when several plugins ship the library.
+### Changed
+* The old Recommendations page now redirects to My Plugins.
+### Removed
+* Remote banners (`class-banners.php`) and their calls to wpfactory.com.
+
 ## [1.1.8] - 2026-11-23
 ### Fixed
 * Dependabot alerts.

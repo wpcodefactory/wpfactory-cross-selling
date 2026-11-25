@@ -8,6 +8,14 @@
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities
 
+## [1.2.2] - 2026-11-25
+### Changed
+* One stylesheet and one script for the whole library, `assets/css/admin(.min).css` and `assets/js/admin(.min).js`, built by webpack from `src/scss` and `src/js`.
+* My Plugins classes, ids, tokens, AJAX actions and caches use the `wpfcs-` prefix. The "seen" flag is now `wpfcs_my_plugins_seen` and still reads the 1.2.0 key.
+* My Plugins page HTML moved to `templates/my-plugins/`.
+### Removed
+* `assets/css/my-plugins-ui-kit.css`, `assets/css/my-plugins.css` and `assets/js/my-plugins.js`.
+
 ## [1.2.1] - 2026-11-25
 ### Changed
 * "My Plugins" in the WPFactory sidebar: pinned last under a divider, tool blue text that turns white on hover and when open, and a grid icon.

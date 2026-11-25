@@ -5,8 +5,7 @@ const RemoveEmptyScriptsPlugin = require('webpack-remove-empty-scripts');
 // Change these variables to fit your project.
 const outputPath = './assets';
 const entryPoints = {
-	admin: ['./src/scss/admin.scss'],
-	//admin: ['./src/js/admin.js', './src/scss/admin.scss'],
+	admin: ['./src/js/admin.js', './src/scss/admin.scss'],
 	//frontend: ['./src/js/frontend.js','./src/scss/frontend.scss']
 	//frontend: ['./src/js/frontend.js']
 };
@@ -74,7 +73,7 @@ const devConfig = {
 	module: {
 		rules: rules
 	},
-	devtool: 'eval-source-map',
+	devtool: 'source-map',
 };
 
 // Production.

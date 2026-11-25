@@ -15,6 +15,9 @@ define( 'ABSPATH', __DIR__ . '/' );
 $GLOBALS['wpf_test_transients'] = array();
 function __( $text, $domain = '' ) { return $text; }
 function _n( $single, $plural, $n, $domain = '' ) { return 1 === (int) $n ? $single : $plural; }
+$GLOBALS['wpf_test_user_meta'] = array();
+function get_current_user_id() { return 7; }
+function get_user_meta( $user_id, $key, $single = false ) { return isset( $GLOBALS['wpf_test_user_meta'][ $user_id ][ $key ] ) ? $GLOBALS['wpf_test_user_meta'][ $user_id ][ $key ] : ''; }
 function esc_html( $s ) { return htmlspecialchars( $s, ENT_QUOTES, 'UTF-8' ); }
 function number_format_i18n( $n, $d = 0 ) { return number_format( $n, $d ); }
 function wp_normalize_path( $p ) { return str_replace( '\\', '/', $p ); }
@@ -30,6 +33,7 @@ require $src . 'class-catalog.php';
 require $src . 'class-site-state.php';
 require $src . 'class-signals.php';
 require $src . 'class-rules-engine.php';
+require $src . 'class-installer.php';
 require $src . 'class-page.php';
 
 use WPFactory\WPFactory_Cross_Selling\My_Plugins\Catalog;
@@ -307,7 +311,7 @@ check( 'subline: none', "Here's what fits how you sell." === Page::get_subline( 
 
 // 16. Sidebar item: grid icon before the label, no dot, CSS scoped to the My Plugins link.
 $title = Page::menu_title( 'My Plugins' );
-check( 'menu title: 14px grid icon then the label', 0 === strpos( $title, '<svg class="wpf-mp-menu-icon" width="14" height="14"' ) && 'My Plugins' === substr( $title, -10 ), $title );
+check( 'menu title: 14px grid icon then the label', 0 === strpos( $title, '<svg class="wpfcs-mp-menu-icon" width="14" height="14"' ) && 'My Plugins' === substr( $title, -10 ), $title );
 check( 'menu title: 4 rounded squares in currentColor', 4 === substr_count( $title, '<rect ' ) && 4 === substr_count( $title, 'rx="1.5" fill="currentColor"' ) );
 check( 'menu title: icon hidden from screen readers', false !== strpos( $title, 'aria-hidden="true" focusable="false"' ) );
 check( 'menu title: no dot or badge', false === strpos( $title, 'dot' ) && false === strpos( $title, 'screen-reader-text' ) && false === strpos( $title, 'count' ) );
@@ -321,7 +325,54 @@ check( 'menu CSS: every selector is scoped to the My Plugins link', $selectors &
 check( 'menu CSS: tool blue, 600 weight', false !== strpos( $css, $scope . '{position:relative;margin-top:13px;color:#6BBFFF;font-weight:600}' ) );
 check( 'menu CSS: white on hover, focus and current', false !== strpos( $css, $scope . ':hover,' . $scope . ':focus,' . $scope . '.current{color:#FFFFFF}' ) );
 check( 'menu CSS: 1px divider, rgba(255,255,255,.15), 6px above and below', false !== strpos( $css, 'top:-7px;height:1px;background:rgba(255,255,255,.15)' ) && false !== strpos( $css, 'margin-top:13px' ) );
-check( 'menu CSS: 14px icon', false !== strpos( $css, '.wpf-mp-menu-icon{display:inline-block;width:14px;height:14px' ) );
+check( 'menu CSS: 14px icon', false !== strpos( $css, '.wpfcs-mp-menu-icon{display:inline-block;width:14px;height:14px' ) );
+
+// 17. One stylesheet and one script, built from src/ (with minified copies).
+$root = dirname( __DIR__, 2 );
+foreach ( array( 'assets/css/admin.css', 'assets/css/admin.min.css', 'assets/js/admin.js', 'assets/js/admin.min.js' ) as $f ) {
+	check( "built file $f", is_file( "$root/$f" ) && filesize( "$root/$f" ) > 1000 );
+}
+check( 'no other css or js files in assets', array( 'admin.css', 'admin.min.css' ) === array_values( array_map( 'basename', glob( "$root/assets/css/*.css" ) ) ) && array( 'admin.js', 'admin.min.js' ) === array_values( array_map( 'basename', glob( "$root/assets/js/*.js" ) ) ) );
+$min_css = file_get_contents( "$root/assets/css/admin.min.css" );
+check( 'admin.min.css carries the My Plugins kit and page rules', false !== strpos( $min_css, '.wpfcs-my-plugins .wpfcs-ui-btn' ) && false !== strpos( $min_css, '.wpfcs-mp-picks' ) && false !== strpos( $min_css, '.wpfcs-product' ) );
+check( 'admin.min.css is minified', substr_count( $min_css, "\n" ) < 5 );
+$min_js = file_get_contents( "$root/assets/js/admin.min.js" );
+check( 'admin.min.js carries the My Plugins script', false !== strpos( $min_js, 'wpfcsMyPlugins' ) && false !== strpos( $min_js, 'wpfcs_my_plugins_install' ) );
+check( 'admin.js has no eval (readable build ships)', false === strpos( file_get_contents( "$root/assets/js/admin.js" ), 'eval(' ) );
+foreach ( array( 'src/scss/modules/_my-plugins-ui-kit.scss', 'src/scss/modules/_my-plugins.scss', 'src/js/modules/my-plugins.js', 'src/js/admin.js' ) as $f ) {
+	check( "source $f", is_file( "$root/$f" ) );
+}
+$admin_scss = file_get_contents( "$root/src/scss/admin.scss" );
+check( 'admin.scss imports the My Plugins modules', false !== strpos( $admin_scss, '"modules/my-plugins-ui-kit"' ) && false !== strpos( $admin_scss, '"modules/my-plugins"' ) );
+
+// 18. One prefix: wpfcs- for every My Plugins class, id, token, handle and request name.
+$sources = array_merge( glob( "$root/src/php/my-plugins/*.php" ), glob( "$root/templates/my-plugins/*.php" ), array( "$root/src/scss/modules/_my-plugins-ui-kit.scss", "$root/src/scss/modules/_my-plugins.scss", "$root/src/js/modules/my-plugins.js", "$root/assets/css/admin.css", "$root/assets/js/admin.js" ) );
+foreach ( $sources as $f ) {
+	$code = file_get_contents( $f );
+	// The old seen key is kept on purpose, as a fallback.
+	$code = str_replace( "OLD_SEEN_META = 'wpf_myplugins_seen'", '', $code );
+	$old  = preg_match_all( '/wpf-mp-|wpf-myplugins|wpf_myplugins|wpfMyPlugins|wpfactory_my_plugins_picks|(?<![\w-])ak-[a-z]|--ak-/', $code, $m );
+	check( 'no old prefix in ' . str_replace( $root . '/', '', $f ), 0 === $old, implode( ', ', array_unique( $m[0] ) ) );
+}
+check( 'AJAX actions and nonce use wpfcs', 'wpfcs_my_plugins' === WPFactory\WPFactory_Cross_Selling\My_Plugins\Installer::NONCE );
+check( 'picks cache uses wpfcs', 'wpfcs_my_plugins_picks' === Rules_Engine::TRANSIENT );
+
+// 19. Templates: the page HTML lives in templates/my-plugins/, the class has none.
+foreach ( array( 'page', 'top-bar', 'owned', 'picks', 'catalog', 'actions' ) as $t ) {
+	check( "template $t", is_file( "$root/templates/my-plugins/$t.php" ) && false !== strpos( file_get_contents( "$root/templates/my-plugins/$t.php" ), "defined( 'ABSPATH' ) || exit;" ) );
+}
+check( 'class-page.php prints no HTML of its own', 0 === substr_count( file_get_contents( "$root/src/php/my-plugins/class-page.php" ), '?>' ) );
+
+// 20. Seen flag: new key, with the 1.2.0 key as a fallback.
+check( 'seen keys', 'wpfcs_my_plugins_seen' === Page::SEEN_META && 'wpf_myplugins_seen' === Page::OLD_SEEN_META );
+$GLOBALS['wpf_test_user_meta'] = array();
+check( 'nothing saved: dot shows', Page::has_unseen() );
+$GLOBALS['wpf_test_user_meta'] = array( 7 => array( 'wpf_myplugins_seen' => (string) Catalog::CATALOG_VERSION ) );
+check( 'seen under the old key only: no dot (fallback)', ! Page::has_unseen() );
+$GLOBALS['wpf_test_user_meta'] = array( 7 => array( 'wpfcs_my_plugins_seen' => (string) Catalog::CATALOG_VERSION ) );
+check( 'seen under the new key: no dot', ! Page::has_unseen() );
+$GLOBALS['wpf_test_user_meta'] = array( 7 => array( 'wpfcs_my_plugins_seen' => '0', 'wpf_myplugins_seen' => (string) Catalog::CATALOG_VERSION ) );
+check( 'the new key wins when both are set', Page::has_unseen() );
 
 echo ( 0 === $fails ? "OK  $total checks passed\n" : "$fails of $total checks failed\n" );
 exit( $fails ? 1 : 0 );

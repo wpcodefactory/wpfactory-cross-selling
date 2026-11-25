@@ -32,7 +32,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Rules_Engine'
 		 *
 		 * @since 1.2.0
 		 */
-		const TRANSIENT = 'wpfactory_my_plugins_picks';
+		const TRANSIENT = 'wpfcs_my_plugins_picks';
 
 		/**
 		 * Cache lifetime in seconds (12 hours).

@@ -42,9 +42,17 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		/**
 		 * User meta: last catalog version the user saw.
 		 *
-		 * @since 1.2.0
+		 * @since 1.2.2
 		 */
-		const SEEN_META = 'wpf_myplugins_seen';
+		const SEEN_META = 'wpfcs_my_plugins_seen';
+
+		/**
+		 * User meta key used by 1.2.0 and 1.2.1. Read when the new key is not set yet, never deleted
+		 * (an older copy of the library may still read it on the same site).
+		 *
+		 * @since 1.2.2
+		 */
+		const OLD_SEEN_META = 'wpf_myplugins_seen';
 
 		/**
 		 * All Access offer.
@@ -124,13 +132,18 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		/**
 		 * has_unseen.
 		 *
-		 * @version 1.2.0
+		 * @version 1.2.2
 		 * @since   1.2.0
 		 *
 		 * @return bool
 		 */
 		static function has_unseen() {
-			return ( Catalog::CATALOG_VERSION > (int) get_user_meta( get_current_user_id(), self::SEEN_META, true ) );
+			$user_id = get_current_user_id();
+			$seen    = get_user_meta( $user_id, self::SEEN_META, true );
+			if ( '' === $seen ) {
+				$seen = get_user_meta( $user_id, self::OLD_SEEN_META, true );
+			}
+			return ( Catalog::CATALOG_VERSION > (int) $seen );
 		}
 
 		/**
@@ -147,7 +160,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		 * @return string
 		 */
 		static function menu_title( $title ) {
-			$icon = '<svg class="wpf-mp-menu-icon" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false">' .
+			$icon = '<svg class="wpfcs-mp-menu-icon" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false">' .
 				'<rect x="0" y="0" width="6" height="6" rx="1.5" fill="currentColor"/>' .
 				'<rect x="8" y="0" width="6" height="6" rx="1.5" fill="currentColor"/>' .
 				'<rect x="0" y="8" width="6" height="6" rx="1.5" fill="currentColor"/>' .
@@ -172,7 +185,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 			return $a . '{position:relative;margin-top:13px;color:#6BBFFF;font-weight:600}' .
 				$a . '::before{content:"";position:absolute;left:0;right:0;top:-7px;height:1px;background:rgba(255,255,255,.15)}' .
 				$a . ':hover,' . $a . ':focus,' . $a . '.current{color:#FFFFFF}' .
-				$a . ' .wpf-mp-menu-icon{display:inline-block;width:14px;height:14px;margin-right:6px;vertical-align:-2px}';
+				$a . ' .wpfcs-mp-menu-icon{display:inline-block;width:14px;height:14px;margin-right:6px;vertical-align:-2px}';
 		}
 
 		/**
@@ -185,7 +198,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 			if ( '' === self::$hook ) {
 				return;
 			}
-			echo '<style id="wpf-myplugins-menu-css">' . self::menu_css() . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed CSS, no user input.
+			echo '<style id="wpfcs-my-plugins-menu-css">' . self::menu_css() . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed CSS, no user input.
 		}
 
 		/**
@@ -275,11 +288,13 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 			if ( '' === self::$hook || $hook_suffix !== self::$hook ) {
 				return;
 			}
-			$ver = Plugin::version();
-			wp_enqueue_style( 'wpf-myplugins-kit', Plugin::url( 'assets/css/my-plugins-ui-kit.css' ), array(), $ver );
-			wp_enqueue_style( 'wpf-myplugins', Plugin::url( 'assets/css/my-plugins.css' ), array( 'wpf-myplugins-kit' ), $ver );
-			wp_enqueue_script( 'wpf-myplugins', Plugin::url( 'assets/js/my-plugins.js' ), array(), $ver, true );
-			wp_localize_script( 'wpf-myplugins', 'wpfMyPlugins', array(
+			// The library's one stylesheet and script, built from src/scss and src/js by webpack.
+			// Own handle: older copies of the library register "wpfactory-cross-selling" with their own file.
+			$ver    = Plugin::version();
+			$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' );
+			wp_enqueue_style( 'wpfcs-my-plugins', Plugin::url( 'assets/css/admin' . $suffix . '.css' ), array(), $ver );
+			wp_enqueue_script( 'wpfcs-my-plugins', Plugin::url( 'assets/js/admin' . $suffix . '.js' ), array(), $ver, true );
+			wp_localize_script( 'wpfcs-my-plugins', 'wpfcsMyPlugins', array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( Installer::NONCE ),
 				'i18n'    => array(
@@ -296,40 +311,47 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		}
 
 		/**
+		 * template.
+		 *
+		 * Prints a template from the library's templates/my-plugins/ folder. The path comes from
+		 * the copy of the library that runs the page (the newest one), like its assets.
+		 *
+		 * @version 1.2.2
+		 * @since   1.2.2
+		 *
+		 * @param string $name Template name, without ".php".
+		 * @param array  $args Variables for the template.
+		 */
+		static function template( $name, array $args = array() ) {
+			$file = Plugin::path( 'templates/my-plugins/' . sanitize_file_name( $name ) . '.php' );
+			if ( ! is_readable( $file ) ) {
+				return;
+			}
+			extract( $args, EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract -- template variables, as in get_template().
+			include $file;
+		}
+
+		/**
 		 * render.
 		 *
-		 * @version 1.2.0
+		 * @version 1.2.2
 		 * @since   1.2.0
 		 */
 		static function render() {
 			if ( ! current_user_can( Plugin::capability() ) ) {
 				return;
 			}
-			$state  = Site_State::from_wp();
-			$woo    = class_exists( 'WooCommerce' );
-			$items  = Catalog::get_items();
-			$picks  = Rules_Engine::get_picks( $state );
-			$owned  = self::sort_owned( $items, $state );
-			$picked_ids = wp_list_pluck( $picks, 'id' );
-			?>
-			<div class="wpf-myplugins">
-				<?php self::render_topbar(); ?>
-				<main class="ak-page wpf-mp-page">
-					<hr class="wp-header-end">
-					<section class="wpf-mp-section" aria-labelledby="wpf-mp-title">
-						<div>
-							<h1 id="wpf-mp-title" class="wpf-mp-h1"><?php esc_html_e( 'My Plugins', 'wpfactory-cross-selling' ); ?></h1>
-							<p class="wpf-mp-lead"><?php echo esc_html( self::get_subline( count( $owned ) ) ); ?></p>
-						</div>
-						<?php self::render_owned( $owned, $state ); ?>
-					</section>
-					<?php if ( ! empty( $picks ) ) : ?>
-						<?php self::render_picks( $picks ); ?>
-					<?php endif; ?>
-					<?php self::render_catalog( $items, $state, $woo, $picked_ids ); ?>
-				</main>
-			</div>
-			<?php
+			$state = Site_State::from_wp();
+			$items = Catalog::get_items();
+			$owned = self::sort_owned( $items, $state );
+			self::template( 'page', array(
+				'state'   => $state,
+				'woo'     => class_exists( 'WooCommerce' ),
+				'items'   => $items,
+				'picks'   => Rules_Engine::get_picks( $state ),
+				'owned'   => $owned,
+				'subline' => self::get_subline( count( $owned ) ),
+			) );
 		}
 
 		/**
@@ -399,155 +421,139 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		}
 
 		/**
-		 * render_topbar.
+		 * get_topbar_links.
 		 *
-		 * The WPFactory submenu as a top bar, as in the AI Assistant and Helpdesk screens.
+		 * The WPFactory submenu entries the user can open, for the top bar.
 		 *
-		 * @version 1.2.0
-		 * @since   1.2.0
+		 * @version 1.2.2
+		 * @since   1.2.2
+		 *
+		 * @return array[] { href, label, current }
 		 */
-		static function render_topbar() {
+		static function get_topbar_links() {
 			global $submenu;
 			$parent  = self::parent_slug();
 			$entries = isset( $submenu[ $parent ] ) ? (array) $submenu[ $parent ] : array();
-			?>
-			<header class="ak-topbar wpf-mp-topbar">
-				<div class="ak-brand"><span class="ak-brand-mark wpf-mp-brand-mark" aria-hidden="true">W</span><?php esc_html_e( 'WPFactory', 'wpfactory-cross-selling' ); ?></div>
-				<nav class="ak-nav" aria-label="<?php esc_attr_e( 'WPFactory', 'wpfactory-cross-selling' ); ?>">
-					<?php foreach ( $entries as $entry ) : ?>
-						<?php
-						if ( empty( $entry[2] ) || ( ! empty( $entry[1] ) && ! current_user_can( $entry[1] ) ) ) {
-							continue;
+			$links   = array();
+			foreach ( $entries as $entry ) {
+				if ( empty( $entry[2] ) || ( ! empty( $entry[1] ) && ! current_user_can( $entry[1] ) ) ) {
+					continue;
+				}
+				$slug  = $entry[2];
+				$label = trim( wp_strip_all_tags( preg_replace( '/<span class="screen-reader-text">.*?<\/span>/s', '', $entry[0] ) ) );
+				if ( '' === $label ) {
+					continue;
+				}
+				$links[] = array(
+					'href'    => ( false !== strpos( $slug, '.php' ) ? admin_url( $slug ) : admin_url( 'admin.php?page=' . $slug ) ),
+					'label'   => $label,
+					'current' => ( self::SLUG === $slug ),
+				);
+			}
+			return $links;
+		}
+
+		/**
+		 * render_topbar.
+		 *
+		 * @version 1.2.2
+		 * @since   1.2.0
+		 */
+		static function render_topbar() {
+			self::template( 'top-bar', array(
+				'links' => self::get_topbar_links(),
+				'dot'   => self::$dot,
+			) );
+		}
+
+		/**
+		 * get_owned_rows.
+		 *
+		 * @version 1.2.2
+		 * @since   1.2.2
+		 *
+		 * @param array      $owned Installed catalog items.
+		 * @param Site_State $state Site state.
+		 *
+		 * @return array[] { item, chip_type, chip_label, action, action_url }
+		 */
+		static function get_owned_rows( array $owned, $state ) {
+			$rows = array();
+			foreach ( $owned as $item ) {
+				$found     = $state->find( $item );
+				$is_active = self::is_owned_active( $item, $state );
+				$row       = array(
+					'item'       => $item,
+					'chip_type'  => 'neutral',
+					'chip_label' => __( 'Free', 'wpfactory-cross-selling' ),
+					'action'     => '',
+					'action_url' => '',
+				);
+				if ( ! $is_active ) {
+					$row['chip_label'] = __( 'Inactive', 'wpfactory-cross-selling' );
+					if ( current_user_can( 'activate_plugins' ) ) {
+						$row['action'] = 'activate';
+					}
+				} elseif ( '' !== $found['pro'] ) {
+					$row['chip_type']  = 'ok';
+					$row['chip_label'] = __( 'Pro', 'wpfactory-cross-selling' );
+				}
+				if ( $is_active ) {
+					if ( '' === $found['pro'] && '' !== $item['pro_url'] ) {
+						$row['action']     = 'upgrade';
+						$row['action_url'] = $item['pro_url'];
+					} else {
+						$settings = Installer::get_settings_url( '' !== $found['pro'] ? $found['pro'] : $found['free'] );
+						if ( '' !== $settings ) {
+							$row['action']     = 'settings';
+							$row['action_url'] = $settings;
 						}
-						$slug    = $entry[2];
-						$current = ( self::SLUG === $slug );
-						$label   = trim( wp_strip_all_tags( preg_replace( '/<span class="screen-reader-text">.*?<\/span>/s', '', $entry[0] ) ) );
-						$href    = ( false !== strpos( $slug, '.php' ) ? admin_url( $slug ) : admin_url( 'admin.php?page=' . $slug ) );
-						if ( '' === $label ) {
-							continue;
-						}
-						?>
-						<a href="<?php echo esc_url( $href ); ?>"<?php echo $current ? ' class="on" aria-current="page"' : ''; ?>>
-							<?php echo esc_html( $label ); ?>
-							<?php if ( $current && self::$dot ) : ?>
-								<span class="wpf-mp-dot" role="img" aria-label="<?php esc_attr_e( 'New plugins available', 'wpfactory-cross-selling' ); ?>"></span>
-							<?php endif; ?>
-						</a>
-					<?php endforeach; ?>
-				</nav>
-			</header>
-			<?php
+					}
+				}
+				$rows[] = $row;
+			}
+			return $rows;
 		}
 
 		/**
 		 * render_owned.
 		 *
-		 * @version 1.2.0
+		 * @version 1.2.2
 		 * @since   1.2.0
 		 *
 		 * @param array      $owned Installed catalog items.
 		 * @param Site_State $state Site state.
 		 */
 		static function render_owned( array $owned, $state ) {
-			?>
-			<div class="ak-card wpf-mp-owned">
-				<?php foreach ( $owned as $item ) : ?>
-					<?php
-					$found     = $state->find( $item );
-					$is_active = self::is_owned_active( $item, $state );
-					if ( ! $is_active ) {
-						$chip = array( 'neutral', __( 'Inactive', 'wpfactory-cross-selling' ) );
-					} elseif ( '' !== $found['pro'] ) {
-						$chip = array( 'ok', __( 'Pro', 'wpfactory-cross-selling' ) );
-					} else {
-						$chip = array( 'neutral', __( 'Free', 'wpfactory-cross-selling' ) );
-					}
-					$file = ( '' !== $found['pro'] ? $found['pro'] : $found['free'] );
-					?>
-					<div class="wpf-mp-owned-row" data-id="<?php echo esc_attr( $item['id'] ); ?>">
-						<div class="wpf-mp-owned-name"><b><?php echo esc_html( $item['name'] ); ?></b> <span class="wpf-mp-muted"><?php echo esc_html( $item['desc'] ); ?></span></div>
-						<span class="ak-chip ak-chip-<?php echo esc_attr( $chip[0] ); ?> wpf-mp-chip"><?php echo esc_html( $chip[1] ); ?></span>
-						<div class="wpf-mp-owned-action">
-							<?php
-							if ( ! $is_active ) {
-								if ( current_user_can( 'activate_plugins' ) ) {
-									printf( '<button type="button" class="ak-btn ak-btn-secondary ak-btn-sm wpf-mp-activate" data-id="%s">%s</button>', esc_attr( $item['id'] ), esc_html__( 'Activate', 'wpfactory-cross-selling' ) );
-								}
-							} elseif ( '' === $found['pro'] && '' !== $item['pro_url'] ) {
-								echo self::external_link( $item['pro_url'], __( 'Upgrade to Pro', 'wpfactory-cross-selling' ), 'ak-btn ak-btn-secondary ak-btn-sm' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in external_link().
-							} else {
-								$settings = Installer::get_settings_url( $file );
-								if ( '' !== $settings ) {
-									printf( '<a class="ak-a" href="%s">%s</a>', esc_url( $settings ), esc_html__( 'Settings', 'wpfactory-cross-selling' ) );
-								}
-							}
-							?>
-						</div>
-						<p class="wpf-mp-error" role="alert" hidden></p>
-					</div>
-				<?php endforeach; ?>
-				<div class="wpf-mp-allaccess">
-					<div class="wpf-mp-allaccess-text">
-						<b><?php esc_html_e( 'Get every WPFactory plugin with All Access', 'wpfactory-cross-selling' ); ?></b>
-						<span class="wpf-mp-muted">
-							<?php esc_html_e( 'Pro versions of all our plugins, for life. Bought a plugin from us in the last 60 days?', 'wpfactory-cross-selling' ); ?>
-							<?php
-							printf(
-								/* translators: %s: "Contact us" link. */
-								esc_html__( '%s and we\'ll count it toward your upgrade.', 'wpfactory-cross-selling' ),
-								self::external_link( self::CONTACT_URL, __( 'Contact us', 'wpfactory-cross-selling' ), 'ak-a' ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in external_link().
-							);
-							?>
-						</span>
-					</div>
-					<?php
-					/* translators: %s: price. */
-					echo self::external_link( self::ALL_ACCESS_URL, sprintf( __( 'Get All Access: %s', 'wpfactory-cross-selling' ), '$499' ), 'ak-btn ak-btn-primary' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in external_link().
-					?>
-				</div>
-			</div>
-			<?php
+			self::template( 'owned', array( 'rows' => self::get_owned_rows( $owned, $state ) ) );
 		}
 
 		/**
 		 * render_picks.
 		 *
-		 * @version 1.2.0
+		 * @version 1.2.2
 		 * @since   1.2.0
 		 *
 		 * @param array $picks Rules_Engine::get_picks().
 		 */
 		static function render_picks( array $picks ) {
-			?>
-			<section class="wpf-mp-section" aria-labelledby="wpf-mp-picks-title">
-				<div>
-					<h2 id="wpf-mp-picks-title" class="wpf-mp-h2"><?php esc_html_e( 'Picked for your store', 'wpfactory-cross-selling' ); ?></h2>
-					<p class="wpf-mp-note"><?php esc_html_e( 'Based on your store settings. Checked on this site, nothing is sent anywhere.', 'wpfactory-cross-selling' ); ?></p>
-				</div>
-				<div class="wpf-mp-picks">
-					<?php foreach ( $picks as $pick ) : ?>
-						<?php $item = Catalog::get_item( $pick['id'] ); ?>
-						<article class="ak-card wpf-mp-pick" data-id="<?php echo esc_attr( $item['id'] ); ?>">
-							<div class="wpf-mp-reason"><?php echo esc_html( $pick['reason'] ); ?></div>
-							<div class="wpf-mp-pick-body">
-								<h3 class="wpf-mp-h3"><?php echo esc_html( $item['name'] ); ?></h3>
-								<p><?php echo esc_html( $item['desc'] ); ?></p>
-							</div>
-							<div class="wpf-mp-pick-foot">
-								<?php self::render_actions( $item, 'pick' ); ?>
-							</div>
-							<p class="wpf-mp-error" role="alert" hidden></p>
-						</article>
-					<?php endforeach; ?>
-				</div>
-			</section>
-			<?php
+			$cards = array();
+			foreach ( $picks as $pick ) {
+				$item = Catalog::get_item( $pick['id'] );
+				if ( $item ) {
+					$cards[] = array(
+						'item'   => $item,
+						'reason' => $pick['reason'],
+					);
+				}
+			}
+			self::template( 'picks', array( 'cards' => $cards ) );
 		}
 
 		/**
 		 * render_catalog.
 		 *
-		 * @version 1.2.0
+		 * @version 1.2.2
 		 * @since   1.2.0
 		 *
 		 * @param array      $items      Catalog items.
@@ -575,42 +581,12 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 					$tabs[ $job ] = $label;
 				}
 			}
-			$first = key( $tabs );
-			?>
-			<section class="wpf-mp-section wpf-mp-catalog" aria-labelledby="wpf-mp-catalog-title">
-				<div class="wpf-mp-catalog-head">
-					<h2 id="wpf-mp-catalog-title" class="wpf-mp-h2"><?php esc_html_e( 'All WPFactory plugins', 'wpfactory-cross-selling' ); ?></h2>
-					<label class="wpf-mp-search">
-						<span><?php esc_html_e( 'Search', 'wpfactory-cross-selling' ); ?></span>
-						<input type="search" class="ak-input" placeholder="<?php esc_attr_e( 'VAT, quantity, barcode...', 'wpfactory-cross-selling' ); ?>" aria-controls="wpf-mp-catalog-list">
-					</label>
-				</div>
-				<div class="ak-seg wpf-mp-tabs" role="tablist" aria-label="<?php esc_attr_e( 'What you want to do', 'wpfactory-cross-selling' ); ?>">
-					<?php foreach ( $tabs as $job => $label ) : ?>
-						<button type="button" role="tab" id="wpf-mp-tab-<?php echo esc_attr( $job ); ?>" data-job="<?php echo esc_attr( $job ); ?>" aria-controls="wpf-mp-catalog-list" aria-selected="<?php echo $job === $first ? 'true' : 'false'; ?>" tabindex="<?php echo $job === $first ? '0' : '-1'; ?>"<?php echo $job === $first ? ' class="on"' : ''; ?>><?php echo esc_html( $label ); ?></button>
-					<?php endforeach; ?>
-				</div>
-				<div class="ak-card wpf-mp-list" id="wpf-mp-catalog-list" role="tabpanel" aria-labelledby="wpf-mp-tab-<?php echo esc_attr( $first ); ?>">
-					<?php foreach ( $shown as $item ) : ?>
-						<div class="wpf-mp-row" data-id="<?php echo esc_attr( $item['id'] ); ?>" data-job="<?php echo esc_attr( $item['job'] ); ?>" data-top="<?php echo $item['top'] ? '1' : '0'; ?>" data-search="<?php echo esc_attr( strtolower( $item['name'] . ' ' . $item['desc'] ) ); ?>">
-							<div class="wpf-mp-row-main">
-								<?php self::render_logo( $item ); ?>
-								<div>
-									<b><?php echo esc_html( $item['name'] ); ?></b>
-									<?php if ( in_array( $item['id'], $picked_ids, true ) ) : ?>
-										<span class="ak-chip ak-chip-info"><?php esc_html_e( 'Picked above', 'wpfactory-cross-selling' ); ?></span>
-									<?php endif; ?>
-									<div class="wpf-mp-muted"><?php echo esc_html( $item['desc'] ); ?></div>
-								</div>
-							</div>
-							<?php self::render_actions( $item, 'row' ); ?>
-							<p class="wpf-mp-error" role="alert" hidden></p>
-						</div>
-					<?php endforeach; ?>
-					<p class="wpf-mp-empty" hidden><?php esc_html_e( 'No plugin matches that search. Try a shorter word.', 'wpfactory-cross-selling' ); ?></p>
-				</div>
-			</section>
-			<?php
+			self::template( 'catalog', array(
+				'shown'      => $shown,
+				'tabs'       => $tabs,
+				'first'      => key( $tabs ),
+				'picked_ids' => $picked_ids,
+			) );
 		}
 
 		/**
@@ -637,55 +613,41 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		}
 
 		/**
-		 * render_logo.
+		 * get_logo_src.
 		 *
-		 * @version 1.2.0
-		 * @since   1.2.0
+		 * @version 1.2.2
+		 * @since   1.2.2
 		 *
 		 * @param array $item Catalog item.
+		 *
+		 * @return string Bundled icon, wp.org icon, or "" for the letters badge.
 		 */
-		static function render_logo( $item ) {
-			$src = '';
+		static function get_logo_src( $item ) {
 			if ( '' !== $item['icon_file'] ) {
-				$src = Plugin::url( 'assets/img/icons/' . $item['icon_file'] );
-			} elseif ( '' !== $item['icon_url'] ) {
-				$src = $item['icon_url'];
+				return Plugin::url( 'assets/img/icons/' . $item['icon_file'] );
 			}
-			if ( '' !== $src ) {
-				printf( '<img class="wpf-mp-logo" src="%s" width="40" height="40" alt="" loading="lazy" decoding="async">', esc_url( $src ) );
-			} else {
-				printf( '<span class="wpf-mp-logo wpf-mp-logo-badge" aria-hidden="true">%s</span>', esc_html( $item['abbr'] ) );
-			}
+			return $item['icon_url'];
 		}
 
 		/**
 		 * render_actions.
 		 *
-		 * Install free (or the wp.org link when installs aren't allowed) and Get Pro.
-		 * Pro-only plugins get a single Get Pro button.
-		 *
-		 * @version 1.2.0
+		 * @version 1.2.2
 		 * @since   1.2.0
 		 *
 		 * @param array  $item    Catalog item.
 		 * @param string $context "pick" or "row".
 		 */
 		static function render_actions( $item, $context ) {
-			$main = ( 'pick' === $context ? 'ak-btn-primary' : 'ak-btn-secondary' );
-			echo '<div class="wpf-mp-actions">';
-			if ( Catalog::is_pro_only( $item ) ) {
-				echo self::external_link( $item['pro_url'], __( 'Get Pro', 'wpfactory-cross-selling' ), 'ak-btn ' . $main . ' ak-btn-sm' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in external_link().
-			} else {
-				if ( Installer::can_install() ) {
-					printf( '<button type="button" class="ak-btn %s ak-btn-sm wpf-mp-install" data-id="%s">%s</button>', esc_attr( $main ), esc_attr( $item['id'] ), esc_html__( 'Install free', 'wpfactory-cross-selling' ) );
-				} else {
-					echo self::external_link( Installer::wporg_url( $item ), __( 'View on WordPress.org', 'wpfactory-cross-selling' ), 'ak-btn ' . $main . ' ak-btn-sm' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in external_link().
-				}
-				if ( '' !== $item['pro_url'] ) {
-					echo self::external_link( $item['pro_url'], __( 'Get Pro', 'wpfactory-cross-selling' ), 'ak-btn ak-btn-text ak-btn-sm' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in external_link().
-				}
-			}
-			echo '</div>';
+			$pro_only    = Catalog::is_pro_only( $item );
+			$can_install = ( ! $pro_only && Installer::can_install() );
+			self::template( 'actions', array(
+				'item'        => $item,
+				'main'        => ( 'pick' === $context ? 'wpfcs-ui-btn-primary' : 'wpfcs-ui-btn-secondary' ),
+				'pro_only'    => $pro_only,
+				'can_install' => $can_install,
+				'wporg_url'   => ( $pro_only || $can_install ? '' : Installer::wporg_url( $item ) ),
+			) );
 		}
 
 		/**

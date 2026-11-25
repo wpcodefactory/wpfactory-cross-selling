@@ -1,23 +1,23 @@
 /**
  * My Plugins page: tabs, search, install and activate.
- * No dependencies. Data comes from wp_localize_script (wpfMyPlugins).
+ * No dependencies. Data comes from wp_localize_script (wpfcsMyPlugins).
  */
 ( function () {
 	'use strict';
 
-	var root = document.querySelector( '.wpf-myplugins' );
-	if ( ! root || ! window.wpfMyPlugins ) {
+	var root = document.querySelector( '.wpfcs-my-plugins' );
+	if ( ! root || ! window.wpfcsMyPlugins ) {
 		return;
 	}
-	var cfg = window.wpfMyPlugins;
+	var cfg = window.wpfcsMyPlugins;
 	var t = cfg.i18n;
 
 	// ------------------------------------------------------------------ Tabs and search.
-	var tabs = Array.prototype.slice.call( root.querySelectorAll( '.wpf-mp-tabs [role="tab"]' ) );
-	var rows = Array.prototype.slice.call( root.querySelectorAll( '.wpf-mp-row' ) );
-	var list = root.querySelector( '#wpf-mp-catalog-list' );
-	var search = root.querySelector( '.wpf-mp-search input' );
-	var empty = root.querySelector( '.wpf-mp-empty' );
+	var tabs = Array.prototype.slice.call( root.querySelectorAll( '.wpfcs-mp-tabs [role="tab"]' ) );
+	var rows = Array.prototype.slice.call( root.querySelectorAll( '.wpfcs-mp-row' ) );
+	var list = root.querySelector( '#wpfcs-mp-catalog-list' );
+	var search = root.querySelector( '.wpfcs-mp-search input' );
+	var empty = root.querySelector( '.wpfcs-mp-empty' );
 	var current = tabs.length ? tabs[ 0 ].getAttribute( 'data-job' ) : '';
 
 	function inTab( row, job ) {
@@ -72,7 +72,7 @@
 			tab.tabIndex = ( tab.getAttribute( 'data-job' ) === current ) ? 0 : -1;
 		} );
 		if ( list ) {
-			var active = root.querySelector( '#wpf-mp-tab-' + current );
+			var active = root.querySelector( '#wpfcs-mp-tab-' + current );
 			if ( active ) {
 				list.setAttribute( 'aria-labelledby', active.id );
 			}
@@ -128,7 +128,7 @@
 
 	function showError( button, data ) {
 		var box = button.closest( '[data-id]' );
-		var el = box ? box.querySelector( '.wpf-mp-error' ) : null;
+		var el = box ? box.querySelector( '.wpfcs-mp-error' ) : null;
 		if ( ! el ) {
 			return;
 		}
@@ -150,7 +150,7 @@
 
 	function clearError( button ) {
 		var box = button.closest( '[data-id]' );
-		var el = box ? box.querySelector( '.wpf-mp-error' ) : null;
+		var el = box ? box.querySelector( '.wpfcs-mp-error' ) : null;
 		if ( el ) {
 			el.hidden = true;
 			el.textContent = '';
@@ -171,15 +171,15 @@
 
 	function activated( button, data ) {
 		var done = document.createElement( 'span' );
-		done.className = 'wpf-mp-done';
+		done.className = 'wpfcs-mp-done';
 		done.setAttribute( 'role', 'status' );
 		done.textContent = t.activated;
 		var link = document.createElement( 'a' );
-		link.className = 'ak-a';
+		link.className = 'wpfcs-ui-a';
 		link.href = ( data && data.settings_url ) ? data.settings_url : 'plugins.php';
 		link.textContent = t.settings;
 		var wrap = document.createElement( 'span' );
-		wrap.className = 'wpf-mp-actions';
+		wrap.className = 'wpfcs-mp-actions';
 		wrap.appendChild( done );
 		wrap.appendChild( link );
 		button.replaceWith( wrap );
@@ -190,7 +190,7 @@
 		var id = button.getAttribute( 'data-id' );
 		clearError( button );
 		setBusy( button, t.activating );
-		post( 'wpf_myplugins_activate', id ).then( function ( res ) {
+		post( 'wpfcs_my_plugins_activate', id ).then( function ( res ) {
 			if ( res && res.success ) {
 				activated( button, res.data );
 			} else {
@@ -208,10 +208,10 @@
 		var label = button.textContent;
 		clearError( button );
 		setBusy( button, t.installing );
-		post( 'wpf_myplugins_install', id ).then( function ( res ) {
+		post( 'wpfcs_my_plugins_install', id ).then( function ( res ) {
 			if ( res && res.success ) {
-				button.classList.remove( 'wpf-mp-install' );
-				button.classList.add( 'wpf-mp-activate' );
+				button.classList.remove( 'wpfcs-mp-install' );
+				button.classList.add( 'wpfcs-mp-activate' );
 				setIdle( button, t.activate );
 				button.focus();
 			} else {
@@ -225,11 +225,11 @@
 	}
 
 	root.addEventListener( 'click', function ( e ) {
-		var button = e.target.closest( 'button.wpf-mp-install, button.wpf-mp-activate' );
+		var button = e.target.closest( 'button.wpfcs-mp-install, button.wpfcs-mp-activate' );
 		if ( ! button || button.disabled ) {
 			return;
 		}
-		if ( button.classList.contains( 'wpf-mp-install' ) ) {
+		if ( button.classList.contains( 'wpfcs-mp-install' ) ) {
 			install( button );
 		} else {
 			activate( button );

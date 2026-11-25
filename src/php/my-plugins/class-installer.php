@@ -30,7 +30,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Installer', f
 		 *
 		 * @since 1.2.0
 		 */
-		const NONCE = 'wpf_myplugins';
+		const NONCE = 'wpfcs_my_plugins';
 
 		/**
 		 * init.
@@ -39,8 +39,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Installer', f
 		 * @since   1.2.0
 		 */
 		static function init() {
-			add_action( 'wp_ajax_wpf_myplugins_install', array( __CLASS__, 'ajax_install' ) );
-			add_action( 'wp_ajax_wpf_myplugins_activate', array( __CLASS__, 'ajax_activate' ) );
+			add_action( 'wp_ajax_wpfcs_my_plugins_install', array( __CLASS__, 'ajax_install' ) );
+			add_action( 'wp_ajax_wpfcs_my_plugins_activate', array( __CLASS__, 'ajax_activate' ) );
 		}
 
 		/**
@@ -59,7 +59,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Installer', f
 				return false;
 			}
 			if ( function_exists( 'wp_is_file_mod_allowed' ) ) {
-				return wp_is_file_mod_allowed( 'wpf_myplugins_install' );
+				return wp_is_file_mod_allowed( 'wpfcs_my_plugins_install' );
 			}
 			return ! ( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS );
 		}

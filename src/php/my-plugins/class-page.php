@@ -4,7 +4,7 @@
  *
  * WPFactory menu > My Plugins. Replaces the Recommendations page (its URL redirects here).
  *
- * @version 1.2.0
+ * @version 1.2.1
  * @since   1.2.0
  * @author  WPFactory
  */
@@ -81,7 +81,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		/**
 		 * init.
 		 *
-		 * @version 1.2.0
+		 * @version 1.2.1
 		 * @since   1.2.0
 		 */
 		static function init() {
@@ -91,6 +91,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 			add_action( 'admin_menu', array( __CLASS__, 'register_menu' ), 99 );
 			add_action( 'admin_menu', array( __CLASS__, 'pin_last' ), PHP_INT_MAX );
 			add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue' ) );
+			add_action( 'admin_head', array( __CLASS__, 'print_menu_css' ) );
 		}
 
 		/**
@@ -133,16 +134,58 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		}
 
 		/**
-		 * dot_html.
+		 * menu_title.
 		 *
-		 * @version 1.2.0
-		 * @since   1.2.0
+		 * Sidebar label: a grid icon, then the title. No dot here: the new-plugins dot
+		 * is shown on the top-bar tab only.
+		 *
+		 * @version 1.2.1
+		 * @since   1.2.1
+		 *
+		 * @param string $title Menu title.
 		 *
 		 * @return string
 		 */
-		static function dot_html() {
-			return ' <span class="wpf-myplugins-menu-dot" aria-hidden="true" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#6BBFFF;margin-left:4px;vertical-align:middle"></span>' .
-				'<span class="screen-reader-text">' . esc_html__( 'New plugins available', 'wpfactory-cross-selling' ) . '</span>';
+		static function menu_title( $title ) {
+			$icon = '<svg class="wpf-mp-menu-icon" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false">' .
+				'<rect x="0" y="0" width="6" height="6" rx="1.5" fill="currentColor"/>' .
+				'<rect x="8" y="0" width="6" height="6" rx="1.5" fill="currentColor"/>' .
+				'<rect x="0" y="8" width="6" height="6" rx="1.5" fill="currentColor"/>' .
+				'<rect x="8" y="8" width="6" height="6" rx="1.5" fill="currentColor"/>' .
+				'</svg>';
+			return $icon . esc_html( $title );
+		}
+
+		/**
+		 * menu_css.
+		 *
+		 * Styles the My Plugins item in the WPFactory sidebar submenu only (matched by its link):
+		 * a divider above it, tool blue text that turns white on hover and when current, and the icon.
+		 *
+		 * @version 1.2.1
+		 * @since   1.2.1
+		 *
+		 * @return string
+		 */
+		static function menu_css() {
+			$a = '#adminmenu .wp-submenu a[href$="page=' . self::SLUG . '"]';
+			return $a . '{position:relative;margin-top:13px;color:#6BBFFF;font-weight:600}' .
+				$a . '::before{content:"";position:absolute;left:0;right:0;top:-7px;height:1px;background:rgba(255,255,255,.15)}' .
+				$a . ':hover,' . $a . ':focus,' . $a . '.current{color:#FFFFFF}' .
+				$a . ' .wpf-mp-menu-icon{display:inline-block;width:14px;height:14px;margin-right:6px;vertical-align:-2px}';
+		}
+
+		/**
+		 * print_menu_css.
+		 *
+		 * @version 1.2.1
+		 * @since   1.2.1
+		 */
+		static function print_menu_css() {
+			if ( '' === self::$hook ) {
+				return;
+			}
+			echo '<style id="wpf-myplugins-menu-css">' . self::menu_css() . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed CSS, no user input.
 		}
 
 		/**
@@ -151,7 +194,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		 * Runs after the old copies (priority 10): their Recommendations submenu is removed,
 		 * and its URL redirects here before WordPress checks access to it.
 		 *
-		 * @version 1.2.0
+		 * @version 1.2.1
 		 * @since   1.2.0
 		 */
 		static function register_menu() {
@@ -164,7 +207,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 
 			self::$dot  = self::has_unseen();
 			$title      = __( 'My Plugins', 'wpfactory-cross-selling' );
-			self::$hook = add_submenu_page( $parent, $title, $title . ( self::$dot ? self::dot_html() : '' ), Plugin::capability(), self::SLUG, array( __CLASS__, 'render' ) );
+			self::$hook = add_submenu_page( $parent, $title, self::menu_title( $title ), Plugin::capability(), self::SLUG, array( __CLASS__, 'render' ) );
 			if ( self::$hook ) {
 				add_action( 'load-' . self::$hook, array( __CLASS__, 'on_load' ) );
 			}

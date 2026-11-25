@@ -15,6 +15,7 @@ define( 'ABSPATH', __DIR__ . '/' );
 $GLOBALS['wpf_test_transients'] = array();
 function __( $text, $domain = '' ) { return $text; }
 function _n( $single, $plural, $n, $domain = '' ) { return 1 === (int) $n ? $single : $plural; }
+function esc_html( $s ) { return htmlspecialchars( $s, ENT_QUOTES, 'UTF-8' ); }
 function number_format_i18n( $n, $d = 0 ) { return number_format( $n, $d ); }
 function wp_normalize_path( $p ) { return str_replace( '\\', '/', $p ); }
 function wp_list_pluck( $list, $field ) { return array_map( function ( $x ) use ( $field ) { return $x[ $field ]; }, $list ); }
@@ -303,6 +304,24 @@ check( 'free active next to an inactive Pro counts as inactive', ! Page::is_owne
 check( 'subline: plural', "You have 4 WPFactory plugins. Here's what else fits how you sell." === Page::get_subline( count( $owned ) ), Page::get_subline( count( $owned ) ) );
 check( 'subline: singular', "You have 1 WPFactory plugin. Here's what else fits how you sell." === Page::get_subline( 1 ) );
 check( 'subline: none', "Here's what fits how you sell." === Page::get_subline( 0 ) );
+
+// 16. Sidebar item: grid icon before the label, no dot, CSS scoped to the My Plugins link.
+$title = Page::menu_title( 'My Plugins' );
+check( 'menu title: 14px grid icon then the label', 0 === strpos( $title, '<svg class="wpf-mp-menu-icon" width="14" height="14"' ) && 'My Plugins' === substr( $title, -10 ), $title );
+check( 'menu title: 4 rounded squares in currentColor', 4 === substr_count( $title, '<rect ' ) && 4 === substr_count( $title, 'rx="1.5" fill="currentColor"' ) );
+check( 'menu title: icon hidden from screen readers', false !== strpos( $title, 'aria-hidden="true" focusable="false"' ) );
+check( 'menu title: no dot or badge', false === strpos( $title, 'dot' ) && false === strpos( $title, 'screen-reader-text' ) && false === strpos( $title, 'count' ) );
+check( 'menu title: label escaped', false !== strpos( Page::menu_title( 'A & B' ), 'A &amp; B' ) );
+check( 'top bar label stays plain text', 'My Plugins' === trim( strip_tags( $title ) ) );
+$css   = Page::menu_css();
+$scope = '#adminmenu .wp-submenu a[href$="page=wpfactory-my-plugins"]';
+preg_match_all( '/(^|\})([^{]+)\{/', $css, $sel );
+$selectors = array_map( 'trim', explode( ',', implode( ',', $sel[2] ) ) );
+check( 'menu CSS: every selector is scoped to the My Plugins link', $selectors && ! array_filter( $selectors, function ( $x ) use ( $scope ) { return 0 !== strpos( $x, $scope ); } ), implode( ' | ', $selectors ) );
+check( 'menu CSS: tool blue, 600 weight', false !== strpos( $css, $scope . '{position:relative;margin-top:13px;color:#6BBFFF;font-weight:600}' ) );
+check( 'menu CSS: white on hover, focus and current', false !== strpos( $css, $scope . ':hover,' . $scope . ':focus,' . $scope . '.current{color:#FFFFFF}' ) );
+check( 'menu CSS: 1px divider, rgba(255,255,255,.15), 6px above and below', false !== strpos( $css, 'top:-7px;height:1px;background:rgba(255,255,255,.15)' ) && false !== strpos( $css, 'margin-top:13px' ) );
+check( 'menu CSS: 14px icon', false !== strpos( $css, '.wpf-mp-menu-icon{display:inline-block;width:14px;height:14px' ) );
 
 echo ( 0 === $fails ? "OK  $total checks passed\n" : "$fails of $total checks failed\n" );
 exit( $fails ? 1 : 0 );

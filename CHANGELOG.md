@@ -8,6 +8,11 @@
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities
 
+## [1.2.1] - 2026-11-25
+### Changed
+* "My Plugins" in the WPFactory sidebar: pinned last under a divider, tool blue text that turns white on hover and when open, and a grid icon.
+* The new-plugins dot shows on the "My Plugins" top-bar tab only, not in the sidebar.
+
 ## [1.2.0] - 2026-11-25
 ### Added
 * "My Plugins" page in the WPFactory menu: the WPFactory plugins on the site, 3 picks based on the store's settings, and every WPFactory plugin with search and tabs. Free plugins install and activate from the page.

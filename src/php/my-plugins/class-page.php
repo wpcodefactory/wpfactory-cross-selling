@@ -302,6 +302,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 					'activate'   => __( 'Activate', 'wpfactory-cross-selling' ),
 					'activating' => __( 'Activating...', 'wpfactory-cross-selling' ),
 					'activated'  => __( 'Activated', 'wpfactory-cross-selling' ),
+					'pro'        => __( 'Pro', 'wpfactory-cross-selling' ),
+					'free'       => __( 'Free', 'wpfactory-cross-selling' ),
 					'settings'   => __( 'Settings', 'wpfactory-cross-selling' ),
 					'wporg'      => __( 'View on WordPress.org', 'wpfactory-cross-selling' ),
 					'newTab'     => __( '(opens in a new tab)', 'wpfactory-cross-selling' ),
@@ -357,9 +359,10 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		/**
 		 * is_owned_active.
 		 *
-		 * Pro decides when it is installed (a free copy left active next to an inactive Pro counts as inactive).
+		 * In use when the free or the Pro version is active (a free copy running next to an
+		 * installed but inactive Pro is in use).
 		 *
-		 * @version 1.2.0
+		 * @version 1.2.3
 		 * @since   1.2.0
 		 *
 		 * @param array      $item  Catalog item.
@@ -369,7 +372,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		 */
 		static function is_owned_active( $item, $state ) {
 			$found = $state->find( $item );
-			return ( '' !== $found['pro'] ? $found['pro_active'] : $found['free_active'] );
+			return ( $found['pro_active'] || $found['free_active'] );
 		}
 
 		/**
@@ -440,7 +443,7 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 					continue;
 				}
 				$slug  = $entry[2];
-				$label = trim( wp_strip_all_tags( preg_replace( '/<span class="screen-reader-text">.*?<\/span>/s', '', $entry[0] ) ) );
+				$label = trim( wp_strip_all_tags( self::strip_menu_extras( $entry[0] ) ) );
 				if ( '' === $label ) {
 					continue;
 				}
@@ -454,6 +457,24 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		}
 
 		/**
+		 * strip_menu_extras.
+		 *
+		 * Removes what WordPress and plugins add next to a submenu title: screen reader text
+		 * and count bubbles (awaiting-mod, update-plugins, menu-counter, ...).
+		 *
+		 * @version 1.2.3
+		 * @since   1.2.3
+		 *
+		 * @param string $title Submenu title HTML.
+		 *
+		 * @return string
+		 */
+		static function strip_menu_extras( $title ) {
+			$title = preg_replace( '/<span class="screen-reader-text">.*?<\/span>/s', '', (string) $title );
+			return preg_replace( '/<span[^>]*class=(["\'])(?:[^"\']*\s)?(?:awaiting-mod|update-plugins|menu-counter|plugin-count|count-\d+)(?:\s[^"\']*)?\1[^>]*>.*?<\/span>(\s*<\/span>)?/s', '', $title );
+		}
+
+		/**
 		 * render_topbar.
 		 *
 		 * @version 1.2.2
@@ -463,13 +484,21 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 			self::template( 'top-bar', array(
 				'links' => self::get_topbar_links(),
 				'dot'   => self::$dot,
+				'logo'  => Plugin::url( 'assets/img/wpfactory-logo-icon.svg' ),
 			) );
 		}
 
 		/**
 		 * get_owned_rows.
 		 *
-		 * @version 1.2.2
+		 * Chip: "Pro" when Pro is active, "Free" when the free version is active, else "Inactive".
+		 * Action:
+		 * - nothing active: Activate (Pro if installed, else free);
+		 * - free active, Pro installed but off: Activate Pro;
+		 * - free active, no Pro installed: Upgrade to Pro (when there is a Pro);
+		 * - otherwise the plugin's Settings link, if it has one.
+		 *
+		 * @version 1.2.3
 		 * @since   1.2.2
 		 *
 		 * @param array      $owned Installed catalog items.
@@ -478,36 +507,35 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Page', false 
 		 * @return array[] { item, chip_type, chip_label, action, action_url }
 		 */
 		static function get_owned_rows( array $owned, $state ) {
-			$rows = array();
+			$rows         = array();
+			$can_activate = current_user_can( 'activate_plugins' );
 			foreach ( $owned as $item ) {
-				$found     = $state->find( $item );
-				$is_active = self::is_owned_active( $item, $state );
-				$row       = array(
+				$found = $state->find( $item );
+				$row   = array(
 					'item'       => $item,
 					'chip_type'  => 'neutral',
-					'chip_label' => __( 'Free', 'wpfactory-cross-selling' ),
+					'chip_label' => __( 'Inactive', 'wpfactory-cross-selling' ),
 					'action'     => '',
 					'action_url' => '',
 				);
-				if ( ! $is_active ) {
-					$row['chip_label'] = __( 'Inactive', 'wpfactory-cross-selling' );
-					if ( current_user_can( 'activate_plugins' ) ) {
-						$row['action'] = 'activate';
-					}
-				} elseif ( '' !== $found['pro'] ) {
+				if ( $found['pro_active'] ) {
 					$row['chip_type']  = 'ok';
 					$row['chip_label'] = __( 'Pro', 'wpfactory-cross-selling' );
+				} elseif ( $found['free_active'] ) {
+					$row['chip_label'] = __( 'Free', 'wpfactory-cross-selling' );
 				}
-				if ( $is_active ) {
-					if ( '' === $found['pro'] && '' !== $item['pro_url'] ) {
-						$row['action']     = 'upgrade';
-						$row['action_url'] = $item['pro_url'];
-					} else {
-						$settings = Installer::get_settings_url( '' !== $found['pro'] ? $found['pro'] : $found['free'] );
-						if ( '' !== $settings ) {
-							$row['action']     = 'settings';
-							$row['action_url'] = $settings;
-						}
+				if ( ! $found['pro_active'] && ! $found['free_active'] ) {
+					$row['action'] = ( $can_activate ? 'activate' : '' );
+				} elseif ( ! $found['pro_active'] && '' !== $found['pro'] ) {
+					$row['action'] = ( $can_activate ? 'activate_pro' : '' );
+				} elseif ( ! $found['pro_active'] && '' !== $item['pro_url'] ) {
+					$row['action']     = 'upgrade';
+					$row['action_url'] = $item['pro_url'];
+				} else {
+					$settings = Installer::get_settings_url( $found['pro_active'] ? $found['pro'] : $found['free'] );
+					if ( '' !== $settings ) {
+						$row['action']     = 'settings';
+						$row['action_url'] = $settings;
 					}
 				}
 				$rows[] = $row;

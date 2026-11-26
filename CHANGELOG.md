@@ -8,6 +8,15 @@
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities
 
+## [1.2.3] - 2026-11-26
+### Fixed
+* My Plugins: a plugin whose free version is active next to an installed but inactive Pro showed as "Inactive". It now shows "Free" with an "Activate Pro" button.
+* My Plugins: after Activate, the chip switches to "Free" or "Pro" right away instead of after a reload.
+* My Plugins: after Activate, "Settings" only links to the plugin's own settings page, never to the Plugins screen.
+* My Plugins top bar: labels no longer show the sidebar count bubbles.
+### Changed
+* My Plugins top bar shows the WPFactory logo.
+
 ## [1.2.2] - 2026-11-25
 ### Changed
 * One stylesheet and one script for the whole library, `assets/css/admin(.min).css` and `assets/js/admin(.min).js`, built by webpack from `src/scss` and `src/js`.

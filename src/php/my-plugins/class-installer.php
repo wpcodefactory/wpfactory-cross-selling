@@ -237,7 +237,8 @@ if ( ! class_exists( 'WPFactory\WPFactory_Cross_Selling\My_Plugins\Installer', f
 			Rules_Engine::clear_cache();
 			$settings = self::get_settings_url( $file );
 			wp_send_json_success( array(
-				'settings_url' => ( '' !== $settings ? $settings : admin_url( 'plugins.php?plugin_status=active' ) ),
+				'settings_url' => $settings, // Empty when the plugin adds its Settings link later than activation.
+				'edition'      => ( $file === $found['pro'] ? 'pro' : 'free' ),
 			) );
 		}
 

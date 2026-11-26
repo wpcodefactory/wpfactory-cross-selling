@@ -18,6 +18,9 @@ function _n( $single, $plural, $n, $domain = '' ) { return 1 === (int) $n ? $sin
 $GLOBALS['wpf_test_user_meta'] = array();
 function get_current_user_id() { return 7; }
 function get_user_meta( $user_id, $key, $single = false ) { return isset( $GLOBALS['wpf_test_user_meta'][ $user_id ][ $key ] ) ? $GLOBALS['wpf_test_user_meta'][ $user_id ][ $key ] : ''; }
+$GLOBALS['wpf_test_caps'] = array( 'activate_plugins' => true );
+function current_user_can( $cap ) { return ! empty( $GLOBALS['wpf_test_caps'][ $cap ] ); }
+function apply_filters( $hook, $value ) { return $value; }
 function esc_html( $s ) { return htmlspecialchars( $s, ENT_QUOTES, 'UTF-8' ); }
 function number_format_i18n( $n, $d = 0 ) { return number_format( $n, $d ); }
 function wp_normalize_path( $p ) { return str_replace( '\\', '/', $p ); }
@@ -302,7 +305,7 @@ check( 'owned: inactive last', 2 === count( $active ) && ! Page::is_owned_active
 $cat_order = array_keys( $items );
 check( 'owned: catalog order inside each group', array_search( $owned[2], $cat_order, true ) < array_search( $owned[3], $cat_order, true ) && array_search( $owned[0], $cat_order, true ) < array_search( $owned[1], $cat_order, true ) );
 $pro_off = state( array( 'ean-for-woocommerce/ean-for-woocommerce.php', 'ean-for-woocommerce-pro/ean-for-woocommerce-pro.php' ), array( 'ean-for-woocommerce/ean-for-woocommerce.php' ) );
-check( 'free active next to an inactive Pro counts as inactive', ! Page::is_owned_active( $items['ean'], $pro_off ) );
+check( 'free active next to an installed but inactive Pro is in use', Page::is_owned_active( $items['ean'], $pro_off ) );
 
 // 15. Subline counts installed plugins, active or not.
 check( 'subline: plural', "You have 4 WPFactory plugins. Here's what else fits how you sell." === Page::get_subline( count( $owned ) ), Page::get_subline( count( $owned ) ) );
@@ -373,6 +376,36 @@ $GLOBALS['wpf_test_user_meta'] = array( 7 => array( 'wpfcs_my_plugins_seen' => (
 check( 'seen under the new key: no dot', ! Page::has_unseen() );
 $GLOBALS['wpf_test_user_meta'] = array( 7 => array( 'wpfcs_my_plugins_seen' => '0', 'wpf_myplugins_seen' => (string) Catalog::CATALOG_VERSION ) );
 check( 'the new key wins when both are set', Page::has_unseen() );
+
+// 21. Installed list: chip and action for each free/Pro combination (wpwhale.com/mcp, 2026-11-25).
+function owned_row( $item, $state ) { $rows = Page::get_owned_rows( array( $item ), $state ); return $rows[0]['chip_label'] . ' / ' . $rows[0]['action']; }
+$hd_free = 'support-ticket-system-for-woocommerce/support-ticket-system-for-woocommerce.php';
+$hd_pro  = 'support-ticket-system-woocommerce-pro/support-ticket-system-woocommerce-pro.php';
+check( 'free active, Pro installed but off: Free / Activate Pro', 'Free / activate_pro' === owned_row( $items['helpdesk'], state( array( $hd_free, $hd_pro ), array( $hd_free ) ) ), owned_row( $items['helpdesk'], state( array( $hd_free, $hd_pro ), array( $hd_free ) ) ) );
+check( 'Pro active: Pro', 0 === strpos( owned_row( $items['helpdesk'], state( array( $hd_free, $hd_pro ), array( $hd_pro ) ) ), 'Pro / ' ) );
+check( 'both off: Inactive / Activate', 'Inactive / activate' === owned_row( $items['helpdesk'], state( array( $hd_free, $hd_pro ), array() ) ) );
+$cog = 'cost-of-goods-for-woocommerce/cost-of-goods-for-woocommerce.php';
+check( 'free only, active: Free / Upgrade to Pro', 'Free / upgrade' === owned_row( $items['cost-of-goods'], state( array( $cog ), array( $cog ) ) ) );
+check( 'free only, off: Inactive / Activate', 'Inactive / activate' === owned_row( $items['cost-of-goods'], state( array( $cog ), array() ) ) );
+$xml_pro = 'product-xml-feeds-for-woocommerce-pro/product-xml-feeds-for-woocommerce-pro.php';
+check( 'Pro only, off: Inactive / Activate', 'Inactive / activate' === owned_row( $items['xml-feeds'], state( array( $xml_pro ), array() ) ) );
+$GLOBALS['wpf_test_caps'] = array();
+check( 'no activate_plugins capability: no button', 'Inactive / ' === owned_row( $items['xml-feeds'], state( array( $xml_pro ), array() ) ) && 'Free / ' === owned_row( $items['helpdesk'], state( array( $hd_free, $hd_pro ), array( $hd_free ) ) ) );
+$GLOBALS['wpf_test_caps'] = array( 'activate_plugins' => true );
+$sorted = array_keys( Page::sort_owned( array_intersect_key( $items, array_flip( array( 'helpdesk', 'cost-of-goods' ) ) ), state( array( $hd_free, $hd_pro, $cog ), array( $hd_free ) ) ) );
+check( 'free active next to an off Pro sorts with the active ones', array( 'helpdesk', 'cost-of-goods' ) === $sorted, implode( ', ', $sorted ) );
+$js = file_get_contents( "$root/src/js/modules/my-plugins.js" );
+check( 'JS updates the chip after Activate', false !== strpos( $js, 'function updateChip' ) && false !== strpos( $js, 'data.edition' ) );
+check( 'activate response says which version is active', false !== strpos( file_get_contents( "$root/src/php/my-plugins/class-installer.php" ), "'edition'" ) );
+
+// 22. Top bar labels drop count bubbles; Activate only links to Settings when the plugin has one.
+check( 'top bar label: awaiting-mod count removed', 'AI Assistant - MCP' === trim( strip_tags( Page::strip_menu_extras( 'AI Assistant - MCP <span class="awaiting-mod">6</span>' ) ) ) );
+check( 'top bar label: update-plugins count removed', 'Updates' === trim( strip_tags( Page::strip_menu_extras( 'Updates <span class="update-plugins count-3"><span class="plugin-count">3</span></span>' ) ) ) );
+check( 'top bar label: screen reader text removed', 'My Plugins' === trim( strip_tags( Page::strip_menu_extras( 'My Plugins<span class="screen-reader-text">New</span>' ) ) ) );
+check( 'top bar label: single-quoted count removed', 'AI Assistant - MCP' === trim( strip_tags( Page::strip_menu_extras( "AI Assistant - MCP <span class='awaiting-mod'>6</span>" ) ) ) );
+check( 'top bar label: other spans kept', 'Discounts x' === trim( strip_tags( Page::strip_menu_extras( 'Discounts <span class="discount-badge">x</span>' ) ) ) );
+check( 'activate response: no Plugins-screen stand-in for Settings', false === strpos( file_get_contents( "$root/src/php/my-plugins/class-installer.php" ), "plugins.php?plugin_status=active" ) );
+check( 'JS shows Settings only when the URL is known', false !== strpos( $js, 'if ( data && data.settings_url )' ) && false === strpos( $js, "'plugins.php'" ) );
 
 echo ( 0 === $fails ? "OK  $total checks passed\n" : "$fails of $total checks failed\n" );
 exit( $fails ? 1 : 0 );

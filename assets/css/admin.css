@@ -1420,9 +1420,10 @@
   justify-content: flex-start;
 }
 
-.wpfcs-my-plugins .wpfcs-mp-brand-mark {
-  background: #3858E9;
-  color: #fff;
+.wpfcs-my-plugins .wpfcs-mp-brand-logo {
+  display: block;
+  width: 32px;
+  height: auto;
 }
 
 .wpfcs-my-plugins .wpfcs-ui-nav {

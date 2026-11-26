@@ -8,14 +8,15 @@
  * @since   1.2.2
  * @author  WPFactory
  *
- * @var array $links { href, label, current } Page::get_topbar_links().
- * @var bool  $dot   Show the new-plugins dot on the current tab.
+ * @var array  $links { href, label, current } Page::get_topbar_links().
+ * @var bool   $dot   Show the new-plugins dot on the current tab.
+ * @var string $logo  WPFactory logo URL.
  */
 
 defined( 'ABSPATH' ) || exit;
 ?>
 <header class="wpfcs-ui-topbar wpfcs-mp-topbar">
-	<div class="wpfcs-ui-brand"><span class="wpfcs-ui-brand-mark wpfcs-mp-brand-mark" aria-hidden="true">W</span><?php esc_html_e( 'WPFactory', 'wpfactory-cross-selling' ); ?></div>
+	<div class="wpfcs-ui-brand"><img class="wpfcs-mp-brand-logo" src="<?php echo esc_url( $logo ); ?>" width="32" height="25" alt=""><?php esc_html_e( 'WPFactory', 'wpfactory-cross-selling' ); ?></div>
 	<nav class="wpfcs-ui-nav" aria-label="<?php esc_attr_e( 'WPFactory', 'wpfactory-cross-selling' ); ?>">
 		<?php foreach ( $links as $link ) : ?>
 			<a href="<?php echo esc_url( $link['href'] ); ?>"<?php echo $link['current'] ? ' class="on" aria-current="page"' : ''; ?>>

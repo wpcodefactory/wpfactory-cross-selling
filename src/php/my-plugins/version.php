@@ -13,4 +13,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-return '1.2.2';
+return '1.2.3';

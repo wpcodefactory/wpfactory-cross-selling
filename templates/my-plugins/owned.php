@@ -7,7 +7,7 @@
  * @author  WPFactory
  *
  * @var array $rows { item, chip_type, chip_label, action, action_url } Page::get_owned_rows().
- *                  action: "activate", "upgrade", "settings" or "".
+ *                  action: "activate", "activate_pro", "upgrade", "settings" or "".
  */
 
 use WPFactory\WPFactory_Cross_Selling\My_Plugins\Page;
@@ -23,6 +23,8 @@ defined( 'ABSPATH' ) || exit;
 			<div class="wpfcs-mp-owned-action">
 				<?php if ( 'activate' === $row['action'] ) : ?>
 					<button type="button" class="wpfcs-ui-btn wpfcs-ui-btn-secondary wpfcs-ui-btn-sm wpfcs-mp-activate" data-id="<?php echo esc_attr( $item['id'] ); ?>"><?php esc_html_e( 'Activate', 'wpfactory-cross-selling' ); ?></button>
+				<?php elseif ( 'activate_pro' === $row['action'] ) : ?>
+					<button type="button" class="wpfcs-ui-btn wpfcs-ui-btn-secondary wpfcs-ui-btn-sm wpfcs-mp-activate" data-id="<?php echo esc_attr( $item['id'] ); ?>"><?php esc_html_e( 'Activate Pro', 'wpfactory-cross-selling' ); ?></button>
 				<?php elseif ( 'upgrade' === $row['action'] ) : ?>
 					<?php echo Page::external_link( $row['action_url'], __( 'Upgrade to Pro', 'wpfactory-cross-selling' ), 'wpfcs-ui-btn wpfcs-ui-btn-secondary wpfcs-ui-btn-sm' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in external_link(). ?>
 				<?php elseif ( 'settings' === $row['action'] ) : ?>

@@ -176,21 +176,44 @@
     button.removeAttribute('aria-busy');
     button.textContent = label;
   }
+
+  // In the installed list, the chip follows the version that is now active.
+  function updateChip(button, data) {
+    var row = button.closest('.wpfcs-mp-owned-row');
+    var chip = row ? row.querySelector('.wpfcs-mp-chip') : null;
+    if (!chip || !data || !data.edition) {
+      return;
+    }
+    var pro = 'pro' === data.edition;
+    chip.classList.remove('wpfcs-ui-chip-ok', 'wpfcs-ui-chip-neutral');
+    chip.classList.add(pro ? 'wpfcs-ui-chip-ok' : 'wpfcs-ui-chip-neutral');
+    chip.textContent = pro ? t.pro : t.free;
+  }
   function activated(button, data) {
+    updateChip(button, data);
     var done = document.createElement('span');
     done.className = 'wpfcs-mp-done';
     done.setAttribute('role', 'status');
     done.textContent = t.activated;
-    var link = document.createElement('a');
-    link.className = 'wpfcs-ui-a';
-    link.href = data && data.settings_url ? data.settings_url : 'plugins.php';
-    link.textContent = t.settings;
     var wrap = document.createElement('span');
     wrap.className = 'wpfcs-mp-actions';
     wrap.appendChild(done);
-    wrap.appendChild(link);
+    // Settings only when the plugin's own Settings link is known; otherwise it shows after a reload.
+    var link = null;
+    if (data && data.settings_url) {
+      link = document.createElement('a');
+      link.className = 'wpfcs-ui-a';
+      link.href = data.settings_url;
+      link.textContent = t.settings;
+      wrap.appendChild(link);
+    }
     button.replaceWith(wrap);
-    link.focus();
+    if (link) {
+      link.focus();
+    } else {
+      done.setAttribute('tabindex', '-1');
+      done.focus();
+    }
   }
   function activate(button) {
     var id = button.getAttribute('data-id');
